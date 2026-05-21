@@ -8,7 +8,7 @@ export const getAll = async () => {
                 p.price,
                 p.category,
                 CONCAT('/img/', p.imgurl) AS imgurl,
-                p.icon,
+                IF(p.icon = '', '', CONCAT('/img/', p.icon)) AS icon,
                 COUNT(r.rid) AS reviewCount
         FROM product p
         LEFT JOIN review r ON p.pid = r.pid
@@ -29,7 +29,7 @@ export const getProduct = async (pid) => {
                 edate,
                 smethod,
                 imgurl,
-                icon
+                IF(icon = '', '', CONCAT('/img/', icon)) AS icon
         FROM product
         WHERE pid = ?
     `;
