@@ -1,15 +1,68 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Join() {
-  const [fade, setFade] = useState("");
-  const [step, setStep] = useState(1);
-  const navigate = useNavigate();
+// ── shoppy 패턴: 필드 키 배열로 form/errors state 한번에 초기화
+const FIELDS = ["id", "pwd", "cpwd", "name", "phone", "email"];
+const initForm = (keys) => keys.reduce((acc, k) => ({ ...acc, [k]: "" }), {});
 
-  useEffect(() => {
-    setFade("end");
-    return () => setFade("");
-  }, []);
+export default function Join() {
+  const navigate = useNavigate();
+  const [fade, setFade] = useState("end");
+  const [step, setStep] = useState(1);
+
+  const [form,   setForm]   = useState(initForm(FIELDS));
+  const [errors, setErrors] = useState(initForm(FIELDS));
+
+  // 입력 변경 시 에러 전체 초기화 (shoppy 동일)
+  const handleChangeForm = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setErrors(initForm(FIELDS));
+  };
+
+  // 다시쓰기
+  const handleResetForm = () => {
+    setForm(initForm(FIELDS));
+    setErrors(initForm(FIELDS));
+  };
+
+  // 중복확인 (추후 서버 API 연동)
+  const handleIdCheck = () => {
+    if (!form.id) {
+      setErrors((p) => ({ ...p, id: "아이디를 입력해주세요" }));
+      return;
+    }
+    alert(`"${form.id}" 사용 가능한 아이디입니다.`);
+  };
+
+  // Step2 제출 → 유효성 검사 (shoppy 패턴)
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!form.id) {
+      setErrors((p) => ({ ...p, id: "아이디를 입력해주세요" }));
+      return;
+    }
+    if (!form.pwd) {
+      setErrors((p) => ({ ...p, pwd: "비밀번호를 입력해주세요" }));
+      return;
+    }
+    if (form.pwd !== form.cpwd) {
+      setErrors((p) => ({ ...p, cpwd: "비밀번호가 일치하지 않습니다" }));
+      return;
+    }
+    if (!form.name) {
+      setErrors((p) => ({ ...p, name: "이름을 입력해주세요" }));
+      return;
+    }
+    if (!form.phone) {
+      setErrors((p) => ({ ...p, phone: "전화번호를 입력해주세요" }));
+      return;
+    }
+
+    // TODO: 서버 회원가입 API 연동 예정
+    setStep(3);
+  };
 
   return (
     <div id="container" className={"start " + fade}>
@@ -18,14 +71,16 @@ export default function Join() {
           <h2>회원가입</h2>
         </div>
 
-        {/* 단계 표시 */}
+        {/* ── 단계 표시 ── */}
         <div className="join-step">
           <div className={step === 1 ? "active" : ""}>약관동의</div>
           <div className={step === 2 ? "active" : ""}>정보입력</div>
           <div className={step === 3 ? "active" : ""}>가입완료</div>
         </div>
 
-        {/* ── Step 1 : 약관 동의 ── */}
+        {/* ────────────────────────────────────
+            Step 1 : 약관 동의
+        ──────────────────────────────────── */}
         {step === 1 && (
           <div className="join-box">
             <h3>전체 동의</h3>
@@ -34,14 +89,16 @@ export default function Join() {
             </label>
             <div className="join-terms">
               제1조 목적<br />
-              이 약관은 OPS 온라인몰 서비스 이용과 관련하여 회사와 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
+              이 약관은 OPS 온라인몰 서비스 이용과 관련하여 회사와 이용자의
+              권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
             </div>
             <label className="join-check">
               <input type="checkbox" /> 개인정보처리방침 동의 <span>(필수)</span>
             </label>
             <div className="join-terms">
               개인정보 수집 및 이용 목적<br />
-              회원가입, 주문, 배송, 고객상담, 서비스 제공을 위해 개인정보를 수집합니다.
+              회원가입, 주문, 배송, 고객상담, 서비스 제공을 위해 개인정보를
+              수집합니다.
             </div>
             <label className="join-check">
               <input type="checkbox" /> 쇼핑정보 수신 동의 <span>(선택)</span>
@@ -53,114 +110,149 @@ export default function Join() {
           </div>
         )}
 
-        {/* ── Step 2 : 정보 입력 ── */}
+        {/* ────────────────────────────────────
+            Step 2 : 정보 입력 (validation 적용)
+        ──────────────────────────────────── */}
         {step === 2 && (
-          <div className="join-box">
-            <h3>회원인증</h3>
-            <div className="join-radio">
-              <label><input type="radio" name="memberType" defaultChecked /> 개인회원</label>
-              <label><input type="radio" name="memberType" /> 사업자회원</label>
-              <label><input type="radio" name="memberType" /> 외국인회원</label>
-            </div>
+          <form onSubmit={handleSubmit}>
+            <div className="join-box">
 
-            <h3>기본정보</h3>
-            <div className="join-form-row">
-              <label>아이디 *</label>
-              <div className="join-with-btn">
-                <input type="text" placeholder="아이디 입력" />
-                <button>중복확인</button>
+              {/* 아이디 */}
+              <div className="join-form-row">
+                <label htmlFor="id">
+                  아이디 *
+                  {errors.id && (
+                    <span className="login-error">{errors.id}</span>
+                  )}
+                </label>
+                <div className="join-with-btn">
+                  <input
+                    type="text"
+                    id="id"
+                    name="id"
+                    value={form.id}
+                    onChange={handleChangeForm}
+                    placeholder="아이디 입력(6~20자)"
+                  />
+                  <button type="button" onClick={handleIdCheck}>중복확인</button>
+                </div>
               </div>
-            </div>
-            <div className="join-form-row">
-              <label>비밀번호 *</label>
-              <input type="password" placeholder="비밀번호 입력" />
-            </div>
-            <div className="join-form-row">
-              <label>비밀번호 확인 *</label>
-              <input type="password" placeholder="비밀번호 재입력" />
-            </div>
-            <div className="join-form-row">
-              <label>이름 *</label>
-              <input type="text" placeholder="이름 입력" />
-            </div>
-            <div className="join-form-row">
-              <label>주소 *</label>
-              <div className="join-with-btn">
-                <input type="text" placeholder="우편번호" />
-                <button>우편번호 찾기</button>
-              </div>
-              <input type="text" placeholder="기본주소" />
-              <input type="text" placeholder="상세주소" />
-            </div>
-            <div className="join-form-row">
-              <label>휴대전화 *</label>
-              <div className="join-phone">
-                <select defaultValue="010">
-                  <option>010</option>
-                  <option>011</option>
-                  <option>016</option>
-                </select>
-                <input type="text" maxLength={4} />
-                <input type="text" maxLength={4} />
-                <button>인증번호받기</button>
-              </div>
-            </div>
-            <div className="join-form-row">
-              <label>이메일 *</label>
-              <div className="join-with-btn">
-                <input type="email" placeholder="이메일 입력" />
-                <button>중복확인</button>
-              </div>
-            </div>
 
-            <h3>추가정보</h3>
-            <div className="join-form-row">
-              <label>성별</label>
-              <div className="join-radio">
-                <label><input type="radio" name="gender" /> 남자</label>
-                <label><input type="radio" name="gender" /> 여자</label>
+              {/* 비밀번호 */}
+              <div className="join-form-row">
+                <label htmlFor="pwd">
+                  비밀번호 *
+                  {errors.pwd && (
+                    <span className="login-error">{errors.pwd}</span>
+                  )}
+                </label>
+                <input
+                  type="password"
+                  id="pwd"
+                  name="pwd"
+                  value={form.pwd}
+                  onChange={handleChangeForm}
+                  placeholder="비밀번호 입력"
+                />
               </div>
-            </div>
-            <div className="join-form-row">
-              <label>생년월일 *</label>
-              <div className="join-birth">
-                <label><input type="radio" name="calendar" defaultChecked /> 양력</label>
-                <label><input type="radio" name="calendar" /> 음력</label>
-                <input type="text" placeholder="년" maxLength={4} />
-                <input type="text" placeholder="월" maxLength={2} />
-                <input type="text" placeholder="일" maxLength={2} />
-              </div>
-            </div>
-            <div className="join-form-row">
-              <label>지역</label>
-              <select>
-                <option>선택</option>
-                <option>서울</option>
-                <option>부산</option>
-                <option>대구</option>
-                <option>인천</option>
-                <option>광주</option>
-                <option>대전</option>
-              </select>
-            </div>
 
-            <div className="join-btns">
-              <button onClick={() => setStep(3)} className="join-main-btn">회원가입</button>
-              <button onClick={() => navigate("/")} className="join-sub-btn">취소</button>
+              {/* 비밀번호 확인 */}
+              <div className="join-form-row">
+                <label htmlFor="cpwd">
+                  비밀번호 확인 *
+                  {errors.cpwd && (
+                    <span className="login-error">{errors.cpwd}</span>
+                  )}
+                </label>
+                <input
+                  type="password"
+                  id="cpwd"
+                  name="cpwd"
+                  value={form.cpwd}
+                  onChange={handleChangeForm}
+                  placeholder="비밀번호 재입력"
+                />
+              </div>
+
+              {/* 이름 */}
+              <div className="join-form-row">
+                <label htmlFor="name">
+                  이름 *
+                  {errors.name && (
+                    <span className="login-error">{errors.name}</span>
+                  )}
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChangeForm}
+                  placeholder="이름을 입력해주세요"
+                />
+              </div>
+
+              {/* 전화번호 */}
+              <div className="join-form-row">
+                <label htmlFor="phone">
+                  전화번호 *
+                  {errors.phone && (
+                    <span className="login-error">{errors.phone}</span>
+                  )}
+                </label>
+                <input
+                  type="text"
+                  id="phone"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChangeForm}
+                  placeholder="휴대폰 번호 입력 ('-' 포함)"
+                />
+              </div>
+
+              {/* 이메일 */}
+              <div className="join-form-row">
+                <label htmlFor="email">이메일</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChangeForm}
+                  placeholder="이메일 입력"
+                />
+              </div>
+
+              <div className="join-btns">
+                <button type="submit" className="join-main-btn">회원가입</button>
+                <button
+                  type="reset"
+                  className="join-sub-btn"
+                  onClick={handleResetForm}
+                >
+                  다시쓰기
+                </button>
+              </div>
             </div>
-          </div>
+          </form>
         )}
 
-        {/* ── Step 3 : 가입 완료 ── */}
+        {/* ────────────────────────────────────
+            Step 3 : 가입 완료
+        ──────────────────────────────────── */}
         {step === 3 && (
           <div className="join-box join-complete">
             <h3>회원가입이 완료되었습니다.</h3>
             <p>OPS 회원이 되신 것을 환영합니다.</p>
-            <button onClick={() => navigate("/Login")} className="join-main-btn">
+            <button
+              onClick={() => navigate("/Login")}
+              className="join-main-btn"
+            >
               로그인하기
             </button>
           </div>
         )}
+
       </div>
     </div>
   );
