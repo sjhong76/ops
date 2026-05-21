@@ -21,7 +21,7 @@ export default function Header() {
   const [sswitch, setSswitch] = useState(false);
 
   // ── Redux에서 로그인 상태 읽기
-  const { isLoggedIn, userId } = useSelector((state) => state.user);
+  const { isLoggedIn, userId, wishCount } = useSelector((state) => state.user);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -100,11 +100,12 @@ export default function Header() {
               <a className="iconmenuitem" onClick={() => setSswitch(true)}>
                 <img src="/img/search.png" style={{ width: "18px", height: "18px" }} alt="search" />
               </a>
-              <a className="iconmenuitem"
-                onClick={() => isLoggedIn
-                  ? alert("관심상품 기능 준비중입니다.")
-                  : navigate("/Login")}>
+              <a className="iconmenuitem" style={{ position: "relative" }}
+                onClick={() => isLoggedIn ? navigate("/wishlist") : navigate("/Login")}>
                 <img src="/img/heart.png" style={{ width: "18px", height: "18px" }} alt="wishlist" />
+                {isLoggedIn && wishCount > 0 && (
+                  <span className="icon-badge">{wishCount}</span>
+                )}
               </a>
               <a className="iconmenuitem" onClick={() => navigate("/cart")}>
                 <img src="/img/cart.png" style={{ width: "20px", height: "20px" }} alt="cart" />

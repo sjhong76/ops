@@ -13,6 +13,7 @@ import Join     from "./pages/Join";
 import ShopList from "./pages/ShopList";
 import Detail   from "./pages/Detail";
 import Cart     from "./pages/Cart";
+import Wishlist from "./pages/Wishlist";
 
 function App() {
   const [prdlist, setPrdlist] = useState([]);
@@ -60,6 +61,7 @@ function App() {
         {/* 인증 */}
         <Route path="/Login"          element={<Login />} />
         <Route path="/Join"           element={<Join />} />
+        <Route path="/wishlist"        element={<Wishlist />} />
       </Routes>
 
       <Footer />
