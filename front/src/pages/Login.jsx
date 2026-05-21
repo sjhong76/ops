@@ -1,10 +1,13 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUser } from "../store";
 
 export default function Login() {
-  const navigate = useNavigate();
-  const idRef  = useRef(null);
-  const pwdRef = useRef(null);
+  const navigate  = useNavigate();
+  const dispatch  = useDispatch();
+  const idRef     = useRef(null);
+  const pwdRef    = useRef(null);
 
   const [formData, setFormData] = useState({ id: "", pwd: "" });
   const [errors,   setErrors]   = useState({ id: "", pwd: "" });
@@ -18,7 +21,6 @@ export default function Login() {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
-    // ── 클라이언트 validation
     if (!formData.id) {
       setErrors((p) => ({ ...p, id: "아이디를 입력해주세요" }));
       idRef.current.focus();
@@ -30,7 +32,6 @@ export default function Login() {
       return;
     }
 
-    // ── 서버 로그인 API 연동
     try {
       const res  = await fetch("/api/auth/login", {
         method:  "POST",
@@ -40,15 +41,12 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        // 서버에서 401 등 에러 응답
         setErrors((p) => ({ ...p, pwd: data.message || "로그인에 실패했습니다." }));
         return;
       }
 
-      // 로그인 성공 → 토큰 저장
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("userId",      data.userId);
-      alert("로그인 성공!");
+      // ── Redux store에 로그인 상태 저장 (Header 즉시 반영)
+      dispatch(setUser({ userId: data.userId, accessToken: data.accessToken }));
       navigate("/");
     } catch (err) {
       console.error("로그인 오류:", err);
@@ -59,39 +57,23 @@ export default function Login() {
   return (
     <div id="container">
       <div id="contents" className="blanktop blankbottom">
-        <div className="titlearea">
-          <h2>Login</h2>
-        </div>
+        <div className="titlearea"><h2>Login</h2></div>
 
         <form onSubmit={handleLoginSubmit}>
           <div className="login">
             <fieldset className="form">
 
-              {/* 아이디 */}
               <div className="id">
-                <input
-                  ref={idRef}
-                  id="memberid"
-                  name="id"
-                  value={formData.id}
-                  onChange={handleFormChange}
-                  placeholder="아이디"
-                  type="text"
-                />
+                <input ref={idRef} id="memberid" name="id"
+                  value={formData.id} onChange={handleFormChange}
+                  placeholder="아이디" type="text" />
               </div>
               {errors.id && <span className="login-error">{errors.id}</span>}
 
-              {/* 비밀번호 */}
               <div className="password">
-                <input
-                  ref={pwdRef}
-                  id="memberpasswd"
-                  name="pwd"
-                  value={formData.pwd}
-                  onChange={handleFormChange}
-                  placeholder="Password"
-                  type="password"
-                />
+                <input ref={pwdRef} id="memberpasswd" name="pwd"
+                  value={formData.pwd} onChange={handleFormChange}
+                  placeholder="Password" type="password" />
               </div>
               {errors.pwd && <span className="login-error">{errors.pwd}</span>}
 
@@ -102,9 +84,7 @@ export default function Login() {
               </p>
 
               <div className="loginbutton">
-                <button type="submit" className="btnsubmit gfull sizel">
-                  로그인
-                </button>
+                <button type="submit" className="btnsubmit gfull sizel">로그인</button>
               </div>
 
               <ul className="loginutill">

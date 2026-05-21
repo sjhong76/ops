@@ -1,75 +1,73 @@
-import { configureStore, createSlice } from '@reduxjs/toolkit';
+import { configureStore, createSlice } from "@reduxjs/toolkit";
+
+/* ────────────────────────────────────────
+   user slice
+   - localStorage에서 초기값 복원 (새로고침 후에도 로그인 유지)
+──────────────────────────────────────── */
+const savedUser = {
+  userId:      localStorage.getItem("userId")      || "",
+  accessToken: localStorage.getItem("accessToken") || "",
+  isLoggedIn:  !!localStorage.getItem("accessToken"),
+};
 
 let user = createSlice({
   name: "user",
-  initialState: { name: "서현교", age: 25 },
+  initialState: savedUser,
   reducers: {
-    changeName(state) {
-      state.name = "SEO";
+    setUser(state, action) {
+      state.userId      = action.payload.userId;
+      state.accessToken = action.payload.accessToken;
+      state.isLoggedIn  = true;
+      // localStorage에도 저장
+      localStorage.setItem("userId",      action.payload.userId);
+      localStorage.setItem("accessToken", action.payload.accessToken);
     },
-
-    increase(state, action) {
-      state.age += action.payload;
+    logout(state) {
+      state.userId      = "";
+      state.accessToken = "";
+      state.isLoggedIn  = false;
+      localStorage.removeItem("userId");
+      localStorage.removeItem("accessToken");
     },
   },
 });
 
-export let { changeName, increase } = user.actions;
+export let { setUser, logout } = user.actions;
 
+/* ────────────────────────────────────────
+   cart slice
+──────────────────────────────────────── */
 let cart = createSlice({
   name: "cart",
-  initialState: [
-    { id: 0, imgurl: "../img/product1.jpg", name: "갸또 쇼콜라", count: 1, ogprice: 38000 },
-    { id: 1, imgurl: "../img/product2.jpg", name: "쉭쎄", count: 1, ogprice: 29000 },
-    { id: 2, imgurl: "../img/product3.jpg", name: "초코 구운과자 묶음 (4+1)", count: 2, ogprice: 9200 },
-  ],
+  initialState: [],
   reducers: {
     addCount(state, action) {
-      let num = state.findIndex((a) => {
-        return a.id === action.payload;
-      });
-      console.log(num);
-      console.log("내가 선택한 상품"+ action.payload);
-      console.log("내가 추가한 상품갯수는"+ state[num].id);
-      console.log("내가 추가한 상품갯수는"+ state[num].count);
-
-      state[num].count++;
-      
+      const item = state.find((a) => a.id === action.payload);
+      if (item) item.count++;
     },
     decreaseCount(state, action) {
-      let num = state.findIndex((a) => {
-        return a.id === action.payload;
-      });
-      console.log(num);
-      if (state[num].count > 1) {
-        state[num].count--;
-      } else if (state[num].count === 1) {
-        alert("최소 주문수량은 1개 입니다.");
-      }
+      const item = state.find((a) => a.id === action.payload);
+      if (!item) return;
+      if (item.count > 1) item.count--;
+      else alert("최소 주문수량은 1개 입니다.");
     },
     addItem(state, action) {
-      let num = state.findIndex((a) => a.id === action.payload.id);
-      if (num !== -1) {
-        state[num].count++;
-      } else {
-        state.push(action.payload);
-      }
+      const existing = state.find((a) => a.id === action.payload.id);
+      if (existing) existing.count += action.payload.count;
+      else state.push(action.payload);
     },
-
     deleteItem(state, action) {
-      let num = state.findIndex((a) => {
-        return a.id === action.payload;
-      });
-      state.splice(num, 1);
+      const idx = state.findIndex((a) => a.id === action.payload);
+      if (idx !== -1) state.splice(idx, 1);
     },
-    sortName(state, action) {
+    clearCart() { return []; },
+    sortName(state) {
       state.sort((a, b) => (a.name > b.name ? 1 : -1));
     },
   },
 });
 
-
-export const {  addCount,  decreaseCount,  addItem,  deleteItem,  sortName } = cart.actions;
+export const { addCount, decreaseCount, addItem, deleteItem, clearCart, sortName } = cart.actions;
 
 export default configureStore({
   reducer: {
