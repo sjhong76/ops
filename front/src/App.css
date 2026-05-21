@@ -3218,3 +3218,11 @@ input[type=checkbox] + label {
 @media (max-width: 1024px) { .shop-product-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 768px) { .shop-category-tabs { flex-wrap: wrap; } .shop-product-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .shop-product-grid { grid-template-columns: 1fr; } }
+
+/* Login 유효성 검사 에러 메시지 */
+.login-error {
+  display: block;
+  color: red;
+  font-size: 0.8rem;
+  padding: 4px 0 0 4px;
+}
