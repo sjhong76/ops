@@ -46,7 +46,7 @@ export default function Login() {
       }
 
       // ── Redux store에 로그인 상태 저장 (Header 즉시 반영)
-      dispatch(setUser({ userId: data.userId, accessToken: data.accessToken }));
+      dispatch(setUser({ uid: data.uid, userId: data.userId, accessToken: data.accessToken }));
       navigate("/");
     } catch (err) {
       console.error("로그인 오류:", err);
