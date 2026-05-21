@@ -1,23 +1,38 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-import data from "./data/products";
+import Header  from "./components/Header";
+import Footer  from "./components/Footer";
 
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-
-import Home    from "./pages/Home";
-import About   from "./pages/About";
-import Member  from "./pages/Member";
-import Login   from "./pages/Login";
-import Join    from "./pages/Join";
+import Home     from "./pages/Home";
+import About    from "./pages/About";
+import Member   from "./pages/Member";
+import Login    from "./pages/Login";
+import Join     from "./pages/Join";
 import ShopList from "./pages/ShopList";
-import Detail  from "./pages/Detail";
-import Cart    from "./pages/Cart";
+import Detail   from "./pages/Detail";
+import Cart     from "./pages/Cart";
 
 function App() {
-  const [prdlist] = useState(data);
+  const [prdlist, setPrdlist] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ── 서버에서 상품 목록 fetch
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => {
+        setPrdlist(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("상품 로딩 실패:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div className="loading">로딩 중...</div>;
 
   return (
     <div className="App">
@@ -49,7 +64,6 @@ function App() {
 
       <Footer />
 
-      {/* 스크롤 상단 버튼 */}
       <div
         className="scrollbtn relative flex flexvcenter flexhcenter on"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

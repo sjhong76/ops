@@ -1,17 +1,26 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
+import express  from 'express';
+import cors     from 'cors';
+import dotenv   from 'dotenv';
+
+import productsRouter from './routes/products.js';
+import authRouter     from './routes/auth.js';
+import cartRouter     from './routes/cart.js';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 9000;
-const app = express();
+const PORT = process.env.SERVER_PORT || 5000;
+const app  = express();
 
-//미들웨어 -> 공통작업 정의
+// ── 미들웨어
 app.use(cors());
 app.use(express.json());
 
+// ── 라우팅
+app.use('/api/products', productsRouter);
+app.use('/api/auth',     authRouter);
+app.use('/api/cart',     cartRouter);
 
+// ── 서버 시작
 app.listen(PORT, () => {
-    console.log(`서버 실행 => ${PORT}`);    
+    console.log(`✅ OPS 서버 실행 => http://localhost:${PORT}`);
 });
