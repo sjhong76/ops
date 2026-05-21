@@ -1,16 +1,19 @@
 import pool from '../db/connection.js';
 
-/** 전체 상품 조회 - pid를 id로 alias (프론트 호환) */
+/** 전체 상품 조회 - pid를 id로 alias + 리뷰 수 포함 */
 export const getAll = async () => {
     const sql = `
-        SELECT  pid      AS id,
-                name     AS title,
-                price,
-                category,
-                CONCAT('/img/', imgurl) AS imgurl,
-                icon
-        FROM product
-        ORDER BY pid
+        SELECT  p.pid        AS id,
+                p.name       AS title,
+                p.price,
+                p.category,
+                CONCAT('/img/', p.imgurl) AS imgurl,
+                p.icon,
+                COUNT(r.rid) AS reviewCount
+        FROM product p
+        LEFT JOIN review r ON p.pid = r.pid
+        GROUP BY p.pid
+        ORDER BY p.pid
     `;
     const [results] = await pool.execute(sql);
     return results;
@@ -25,7 +28,7 @@ export const getProduct = async (pid) => {
                 category,
                 edate,
                 smethod,
-                CONCAT('/img/', imgurl) AS imgurl,
+                imgurl,
                 icon
         FROM product
         WHERE pid = ?

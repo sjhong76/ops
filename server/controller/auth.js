@@ -59,6 +59,7 @@ export const login = async (req, res, next) => {
         res.json({
             message: '로그인 성공',
             accessToken,
+            uid:    user.uid,
             userId: user.id,
             role: 'ROLE_USER',
         });

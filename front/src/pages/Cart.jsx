@@ -1,65 +1,42 @@
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-// import store, {changeName, increase} from './store.js'
-import { addCount, decreaseCount, deleteItem, sortName } from "../store";
-import { Link } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { addCount, decreaseCount, deleteItem } from "../store";
+import { getTotalPrice, getDeliveryFee, formatPrice } from "../utils/cart";
 
-function Cart() {
-  let state = useSelector((state) => state);
-  // console.log(state.cart[0].name);
+export default function Cart() {
+  const navigate  = useNavigate();
+  const dispatch  = useDispatch();
+  const cartItems = useSelector((state) => state.cart);
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
 
-  // dispatch는  store.js 로 요청보내주는 함수
-  let dispatch = useDispatch();
-
-  const smallProdcuctStyle = {
-    width: "100%",
-    height: "100%",
-    cursor: "pointer",
-  };
-
-  let textverticalAlign = {
-    verticalAlign: "middle",
-    textAlign: "center",
-  };
-
-  let [fade, setFade] = useState("");
-
+  const [fade, setFade] = useState("");
   useEffect(() => {
     setFade("end");
-    return () => {
-      setFade("");
-    };
+    return () => setFade("");
   }, []);
 
-  const [cartselect, setCartselect] = useState(true);
+  // 비로그인 → 로그인 페이지로 (shoppy 패턴)
+  useEffect(() => {
+    if (!isLoggedIn) {
+      alert("로그인이 필요한 서비스입니다.");
+      navigate("/Login");
+    }
+  }, [isLoggedIn, navigate]);
 
-  const trCount = state.cart.length;
+  const totalPrice   = getTotalPrice(cartItems);
+  const deliveryFee  = getDeliveryFee(totalPrice);
+  const allPrice     = totalPrice + deliveryFee;
 
-  function formatNumber(number) {
-    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  }
-
-  const totalCartPrice = state.cart.reduce(
-    (total, item) => total + item.ogprice * item.count,
-    0,
-  );
-
-  let delprice = 3000;
-  if (totalCartPrice >= 30000) {
-    delprice = 0;
-  } else if (totalCartPrice <= 0) {
-    delprice = 0;
-  } else {
-    delprice = 3000;
-  }
-
-  let allprice = totalCartPrice + delprice;
+  if (!isLoggedIn) return null;
 
   return (
     <div id="contents2" className={"start " + fade}>
       <div className="titlearea blanktop">
         <h2>장바구니</h2>
       </div>
+
+      {/* 단계 표시 */}
       <div className="ecbasestep">
         <ol>
           <li className="selected">1. 장바구니</li>
@@ -67,162 +44,137 @@ function Cart() {
           <li>3. 주문완료</li>
         </ol>
       </div>
-      <div className="cartcontainer">
-        <div className="cartproduct">
-          <div
-            className={
-              "ecbasefold3 theme3 " + (cartselect == true ? "selected" : null)
-            }
-          >
-            <div
-              className="title"
-              onClick={() => {
-                setCartselect(!cartselect);
-              }}
-            >
-              <h3>장바구니 상품</h3>
-            </div>
-            <div
-              className={"contents " + (cartselect == true ? "selected" : null)}
-            >
-              <div className="title subtitle">
-                <h4>일반상품 ({trCount})</h4>
-              </div>
-              <div className="xansordernormal">
-                <div className="xanorderlist">
-                  {state.cart.map((a, i) => (
-                    <div className="ecbaseprdinfo" key={i}>
-                      <div className="prdbox">
-                        <input
-                          type="checkbox"
-                          id="basketchkid0"
-                          name="basketproductnormaltypenormal"
-                          className="check"
-                        ></input>
-                        <Link
-                          className="thumbnail"
-                          to={`/detail/${state.cart[i].id}`}
-                        >
-                          <img
-                            src={`img/${state.cart[i].imgurl}`}
-                            style={smallProdcuctStyle}
-                          />
-                        </Link>
-                        <div className="description">
-                          <strong className="prdname">
-                            {state.cart[i].name}
-                          </strong>
-                          <p className="price">
-                            ₩{formatNumber(state.cart[i].ogprice)}
-                          </p>
-                          <p className="info">
-                            배송 : 3만원 이상 [무료] / 기본배송
-                          </p>
-                        </div>
-                        <div className="sumprice">
-                          ₩
-                          <strong>
-                            {formatNumber(
-                              state.cart[i].ogprice * state.cart[i].count,
-                            )}{" "}
-                          </strong>
-                        </div>
-                        <div className="quantity">
-                          <div>
+
+      {cartItems.length === 0 ? (
+        /* ── 빈 장바구니 (shoppy 패턴) ── */
+        <div className="cart-empty">
+          <p>장바구니에 담은 상품이 없습니다.</p>
+          <Link to="/shop" className="btnsubmit sizem">상품 보러가기</Link>
+        </div>
+      ) : (
+        <div className="cartcontainer">
+
+          {/* ── 상품 목록 ── */}
+          <div className="cartproduct">
+            <div className="ecbasefold3 theme3 selected">
+              <div className="title"><h3>장바구니 상품</h3></div>
+              <div className="contents selected">
+                <div className="title subtitle">
+                  <h4>일반상품 ({cartItems.length})</h4>
+                </div>
+                <div className="xansordernormal">
+                  <div className="xanorderlist">
+                    {cartItems.map((item) => (
+                      <div className="ecbaseprdinfo" key={item.id}>
+                        <div className="prdbox">
+                          <input type="checkbox" className="check" />
+
+                          {/* 썸네일 */}
+                          <Link className="thumbnail" to={`/detail/${item.id}`}>
+                            <img src={item.imgurl} alt={item.name}
+                              style={{ width: "100%", height: "100%", cursor: "pointer" }} />
+                          </Link>
+
+                          {/* 상품 정보 */}
+                          <div className="description">
+                            <strong className="prdname">{item.name}</strong>
+                            <p className="price">₩{formatPrice(item.ogprice)}</p>
+                            <p className="info">배송 : 3만원 이상 [무료] / 기본배송</p>
+                          </div>
+
+                          {/* 합계 금액 */}
+                          <div className="sumprice">
+                            ₩<strong>{formatPrice(item.ogprice * item.count)}</strong>
+                          </div>
+
+                          {/* 수량 조절 (shoppy: + / - 버튼 패턴) */}
+                          <div className="quantity">
                             <span className="ecbaseqty">
-                              <input
-                                id="quantityid0"
-                                name="quantityname0"
-                                value={state.cart[i].count}
-                                type="text"
-                              ></input>
-                              <a
-                                className="up"
-                                onClick={() => {
-                                  dispatch(addCount(state.cart[i].id));
-                                }}
-                              >
+                              <input value={item.count} type="text" readOnly />
+                              <a className="up" onClick={() => dispatch(addCount(item.id))}>
                                 수량증가
                               </a>
-                              <a
-                                className="down"
-                                onClick={() => {
-                                  dispatch(decreaseCount(state.cart[i].id));
-                                }}
-                              >
+                              <a className="down" onClick={() => dispatch(decreaseCount(item.id))}>
                                 수량감소
                               </a>
                             </span>
                           </div>
+
+                          {/* 버튼 */}
+                          <div className="buttongroup">
+                            <a className="btnnormal sizes">관심상품</a>
+                            <a className="btnsubmit sizes" onClick={() => navigate("/")}>
+                              주문하기
+                            </a>
+                          </div>
                         </div>
-                        <div className="buttongroup">
-                          <a className="btnnormal sizes">관심상품</a>
-                          <a className="btnsubmit sizes">주문하기</a>
-                        </div>
+
+                        {/* 삭제 버튼 */}
+                        <a className="btndelete" onClick={() => dispatch(deleteItem(item.id))}>
+                          삭제
+                        </a>
                       </div>
-                      <a
-                        className="btndelete"
-                        onClick={() => {
-                          dispatch(deleteItem(state.cart[i].id));
-                        }}
-                      >
-                        삭제
-                      </a>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="carttotal">
-          <div className="sticky">
-            <div className="totalsummary">
-              <h3 className="totalsummarytitle">주문상품</h3>
-              <div className="totalsummaryitem">
-                <div className="heading">
-                  <h4 className="title">총 상품금액</h4>
-                  <div className="data">
-                    ₩
-                    <strong>
-                      <span>{formatNumber(totalCartPrice)}</span>
-                    </strong>
+
+          {/* ── 금액 요약 (shoppy: cart-summary 패턴) ── */}
+          <div className="carttotal">
+            <div className="sticky">
+              <div className="totalsummary">
+                <h3 className="totalsummarytitle">주문상품</h3>
+
+                <div className="totalsummaryitem">
+                  <div className="heading">
+                    <h4 className="title">총 상품금액</h4>
+                    <div className="data">
+                      ₩<strong><span>{formatPrice(totalPrice)}</span></strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="totalsummaryitem">
+                  <div className="heading">
+                    <h4 className="title">총 배송비</h4>
+                    <div className="data">
+                      ₩<strong><span>{formatPrice(deliveryFee)}</span></strong>
+                    </div>
+                  </div>
+                  {deliveryFee === 0 && totalPrice > 0 && (
+                    <p style={{ fontSize: "11px", color: "#e74c3c", marginTop: "4px" }}>
+                      🎉 무료배송 적용됨
+                    </p>
+                  )}
+                  {deliveryFee > 0 && (
+                    <p style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>
+                      {formatPrice(30000 - totalPrice)}원 더 담으면 무료배송
+                    </p>
+                  )}
+                </div>
+
+                <div className="total">
+                  <h3 className="title">결제예정금액</h3>
+                  <div className="paymentprice">
+                    ₩<strong><span>{formatPrice(allPrice)}</span></strong>
                   </div>
                 </div>
               </div>
-              <div className="totalsummaryitem">
-                <div className="heading">
-                  <h4 className="title">총 배송비</h4>
-                  <div className="data">
-                    ₩
-                    <strong>
-                      <span>{formatNumber(delprice)}</span>
-                    </strong>
-                  </div>
-                </div>
-              </div>
-              <div className="total">
-                <h3 className="title">결제예정금액</h3>
-                <div className="paymentprice">
-                  ₩
-                  <strong>
-                    <span>{formatNumber(allprice)}</span>
-                  </strong>
-                </div>
-              </div>
-            </div>
-            <div>
+
               <div className="ecbasebutton">
-                <a className="btnsubmit gfull sizel">전체상품주문</a>
+                <a className="btnsubmit gfull sizel"
+                  onClick={() => navigate("/")}>
+                  전체상품주문
+                </a>
                 <a className="btnnormal gfull sizel">선택상품주문</a>
               </div>
             </div>
           </div>
+
         </div>
-      </div>
-      <div></div>
+      )}
     </div>
   );
 }
-
-export default Cart;

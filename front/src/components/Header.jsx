@@ -100,7 +100,10 @@ export default function Header() {
               <a className="iconmenuitem" onClick={() => setSswitch(true)}>
                 <img src="/img/search.png" style={{ width: "18px", height: "18px" }} alt="search" />
               </a>
-              <a className="iconmenuitem" onClick={() => navigate("/Login")}>
+              <a className="iconmenuitem"
+                onClick={() => isLoggedIn
+                  ? alert("관심상품 기능 준비중입니다.")
+                  : navigate("/Login")}>
                 <img src="/img/heart.png" style={{ width: "18px", height: "18px" }} alt="wishlist" />
               </a>
               <a className="iconmenuitem" onClick={() => navigate("/cart")}>

@@ -1,12 +1,12 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 
 /* ────────────────────────────────────────
-   user slice
-   - localStorage에서 초기값 복원 (새로고침 후에도 로그인 유지)
+   user slice - localStorage에서 초기값 복원
 ──────────────────────────────────────── */
 const savedUser = {
-  userId:      localStorage.getItem("userId")      || "",
-  accessToken: localStorage.getItem("accessToken") || "",
+  uid:         Number(localStorage.getItem("uid"))      || null,
+  userId:      localStorage.getItem("userId")           || "",
+  accessToken: localStorage.getItem("accessToken")      || "",
   isLoggedIn:  !!localStorage.getItem("accessToken"),
 };
 
@@ -15,17 +15,20 @@ let user = createSlice({
   initialState: savedUser,
   reducers: {
     setUser(state, action) {
+      state.uid         = action.payload.uid;
       state.userId      = action.payload.userId;
       state.accessToken = action.payload.accessToken;
       state.isLoggedIn  = true;
-      // localStorage에도 저장
+      localStorage.setItem("uid",         action.payload.uid);
       localStorage.setItem("userId",      action.payload.userId);
       localStorage.setItem("accessToken", action.payload.accessToken);
     },
     logout(state) {
+      state.uid         = null;
       state.userId      = "";
       state.accessToken = "";
       state.isLoggedIn  = false;
+      localStorage.removeItem("uid");
       localStorage.removeItem("userId");
       localStorage.removeItem("accessToken");
     },

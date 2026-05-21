@@ -5,6 +5,7 @@ import dotenv   from 'dotenv';
 import productsRouter from './routes/products.js';
 import authRouter     from './routes/auth.js';
 import cartRouter     from './routes/cart.js';
+import reviewRouter   from './routes/review.js';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/products', productsRouter);
 app.use('/api/auth',     authRouter);
 app.use('/api/cart',     cartRouter);
+app.use('/api/reviews',  reviewRouter);
 
 // ── 서버 시작
 app.listen(PORT, () => {
