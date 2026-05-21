@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addItem } from "../store";
+import { addItem, setWishCount } from "../store";
 import { formatPrice } from "../utils/cart";
 
 // ── 별점 렌더링 헬퍼
@@ -35,6 +35,7 @@ export default function Detail({ prdlist }) {
   const [qttval,       setQttval]       = useState(1);
   const [fade,         setFade]         = useState("");
   const [showPopup,    setShowPopup]    = useState(false);
+  const [isWished,      setIsWished]      = useState(false);
   const [detailselect1, setDetailselect1] = useState(false);
   const [detailselect2, setDetailselect2] = useState(false);
   const [detailselect3, setDetailselect3] = useState(false);
@@ -50,6 +51,31 @@ export default function Detail({ prdlist }) {
     setFade("end");
     return () => setFade("");
   }, []);
+
+  // ── 찜 여부 확인
+  useEffect(() => {
+    if (isLoggedIn && uid && id) {
+      fetch(`/api/wishlist/check/${uid}/${id}`)
+        .then((r) => r.json())
+        .then((d) => setIsWished(d.isWished))
+        .catch(() => {});
+    }
+  }, [id, uid, isLoggedIn]);
+
+  // ── 찜 토글
+  const handleToggleWish = async () => {
+    if (!isLoggedIn) { alert("로그인이 필요합니다."); navigate("/Login"); return; }
+    try {
+      const res  = await fetch("/api/wishlist", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ uid, pid: Number(id) }),
+      });
+      const data = await res.json();
+      setIsWished(data.isWished);
+      dispatch(setWishCount(data.wishCount));
+    } catch (err) { console.error("찜 토글 실패:", err); }
+  };
 
   // ── 리뷰 fetch
   const fetchReviews = async () => {
@@ -231,8 +257,12 @@ export default function Detail({ prdlist }) {
                       <button type="button" className="btnnormal sizel actioncart" onClick={handleAddCart}>
                         <span><img src="/img/iconcart.svg" style={{ width: "15px", height: "15px" }} alt="cart" /></span>
                       </button>
-                      <button type="button" className="btnnormal sizel actionwish">
-                        <span><img src="/img/heart.png" style={{ width: "14px", height: "14px" }} alt="wish" /></span>
+                      <button type="button" className="btnnormal sizel actionwish"
+                        onClick={handleToggleWish}
+                        style={{ color: isWished ? "#e74c3c" : "#999" }}
+                        title={isWished ? "관심상품 취소" : "관심상품 추가"}
+                      >
+                        <span style={{ fontSize: "16px" }}>{isWished ? "♥" : "♡"}</span>
                       </button>
                     </span>
                   </div>

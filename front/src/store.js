@@ -8,6 +8,7 @@ const savedUser = {
   userId:      localStorage.getItem("userId")           || "",
   accessToken: localStorage.getItem("accessToken")      || "",
   isLoggedIn:  !!localStorage.getItem("accessToken"),
+  wishCount:   Number(localStorage.getItem("wishCount")) || 0,
 };
 
 let user = createSlice({
@@ -19,23 +20,30 @@ let user = createSlice({
       state.userId      = action.payload.userId;
       state.accessToken = action.payload.accessToken;
       state.isLoggedIn  = true;
+      state.wishCount  = 0;
       localStorage.setItem("uid",         action.payload.uid);
       localStorage.setItem("userId",      action.payload.userId);
       localStorage.setItem("accessToken", action.payload.accessToken);
+    },
+    setWishCount(state, action) {
+      state.wishCount = action.payload;
+      localStorage.setItem("wishCount", action.payload);
     },
     logout(state) {
       state.uid         = null;
       state.userId      = "";
       state.accessToken = "";
       state.isLoggedIn  = false;
+      state.wishCount  = 0;
       localStorage.removeItem("uid");
       localStorage.removeItem("userId");
       localStorage.removeItem("accessToken");
+      localStorage.removeItem("wishCount");
     },
   },
 });
 
-export let { setUser, logout } = user.actions;
+export let { setUser, logout, setWishCount } = user.actions;
 
 /* ────────────────────────────────────────
    cart slice
