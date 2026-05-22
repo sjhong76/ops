@@ -1,6 +1,8 @@
 -- OPS Bakery Database
+DROP DATABASE ops; -- ops 삭제 명령어
 CREATE DATABASE IF NOT EXISTS ops DEFAULT CHARACTER SET utf8mb4;
 USE ops;
+show tables;
 
 -- ── 상품 테이블
 CREATE TABLE IF NOT EXISTS product (
@@ -37,7 +39,6 @@ CREATE TABLE IF NOT EXISTS user (
     email      VARCHAR(100),
     created_at DATETIME     DEFAULT NOW()
 );
-
 -- ── 장바구니 테이블
 CREATE TABLE IF NOT EXISTS cart (
     cid   INT PRIMARY KEY AUTO_INCREMENT,
@@ -70,6 +71,9 @@ CREATE TABLE IF NOT EXISTS review (
 );
 
 -- ── 상품 초기 데이터 (products.js 기준)
+INSERT INTO user (id, pwd, name, phone, email) VALUES
+("user1", "1234", "kim", "01011112222", "0000@gmail.com");
+
 INSERT INTO product (name, price, category, edate, smethod, imgurl, icon) VALUES
 ('갸또 쇼콜라',                '38000', '케이크', '제조일로부터 5일',          '냉장보관',                                            'product1.jpg',  ''),
 ('쉭쎄',                      '29000', '케이크', '제조일로부터 8일',          '냉장보관',                                            'product2.jpg',  ''),
@@ -89,7 +93,7 @@ INSERT INTO product (name, price, category, edate, smethod, imgurl, icon) VALUES
 ('바따르',                     '4200',  '빵',    '제조일로부터 5일',          '직사광선을 피하고 서늘한 곳 보관(개봉 후 냉장보관)',   'product16.jpg', 'newicon.gif'),
 ('뺑 드 세글',                 '8000',  '빵',    '제조일로부터 5일',          '직사광선을 피하고 서늘한 곳 보관(개봉 후 냉장보관)',   'product17.jpg', 'newicon.gif');
 
--- ── 더미 리뷰 데이터
+ 
 INSERT INTO review (pid, uid, content, rating) VALUES
 (1, 1, '정말 맛있어요! 초콜렛 향이 진하고 식감이 부드럽습니다. 재구매 의사 있어요.', 5),
 (1, 1, '선물용으로 샀는데 포장도 예쁘고 맛도 좋았어요. 친구가 너무 좋아했습니다.', 4),
@@ -99,3 +103,7 @@ INSERT INTO review (pid, uid, content, rating) VALUES
 (5, 1, '당근케익 처음 먹어봤는데 당근 특유의 향이 없고 촉촉해서 맛있어요.', 4),
 (9, 1, '파인치즈 케익 정말 고급스러운 맛이에요. 치즈향이 진해서 좋아요.', 5),
 (9, 1, '생일 케이크로 주문했는데 배송도 빠르고 맛도 훌륭했습니다.', 5);
+
+select * from review;
+select * from product;
+select * from user;
