@@ -32,7 +32,7 @@ export default function Footer() {
           </div>
 
           {/* ── 오른쪽 ── */}
-          <div className="footerright pullright clearfix">
+          <div className="footerright pullright 1100">
             <div className="footercolumn pullleft">
               <div className="footertitle">Customer center</div>
               <p className="footertxt">1588. 3069</p>
