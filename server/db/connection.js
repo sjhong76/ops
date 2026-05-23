@@ -13,6 +13,6 @@ const pool = mysql.createPool({
 // DB 연결 테스트
 pool.getConnection()
     .then(() => console.log('✅ MySQL 연결 성공!!'))
-    .catch(() => console.log('❌ MySQL 연결 실패'));
+    .catch((err) => console.log('❌ MySQL 연결 실패:', err.message));
 
 export default pool;
