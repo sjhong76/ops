@@ -51,7 +51,7 @@ export default function Footer() {
               <div className="footertitle">Shop menu</div>
               <ul className="footernav">
                 {SHOP_LINKS.map((item) => (
-                  <li key={item}><a className="footerlink footertxt">{item}</a></li>
+                  <li key={item}><a className="footerlink footertxt" onClick={() => alert("준비중입니다.")} style={{ cursor: "pointer" }}>{item}</a></li>
                 ))}
               </ul>
             </div>
@@ -59,7 +59,7 @@ export default function Footer() {
               <div className="footertitle">Follow us</div>
               <ul className="footernav">
                 {FOLLOW_LINKS.map((item) => (
-                  <li key={item}><a className="footerlink footertxt">{item}</a></li>
+                  <li key={item}><a className="footerlink footertxt" onClick={() => alert("준비중입니다.")} style={{ cursor: "pointer" }}>{item}</a></li>
                 ))}
               </ul>
             </div>

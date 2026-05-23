@@ -52,12 +52,12 @@ export default function Header() {
                 </div>
               </li>
               <li className="categoryitem">
-                <a className="categorylink" onClick={() => navigate("/Login")}>COMMUNITY</a>
+                <a className="categorylink" onClick={() => alert("준비중입니다.")}>COMMUNITY</a>
                 <div className="subcategory">
                   <ul className="subcategorylist">
                     {COMMUNITY_MENUS.map((label) => (
                       <li key={label} className="subcategoryitem">
-                        <a className="subcategorylink" onClick={() => navigate("/Login")}>{label}</a>
+                        <a className="subcategorylink" onClick={() => alert("준비중입니다.")}>{label}</a>
                       </li>
                     ))}
                   </ul>
