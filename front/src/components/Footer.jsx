@@ -24,15 +24,15 @@ export default function Footer() {
             >
               <a className="policyabout">About</a>
               <ul className={"policylist " + (listshow ? "on" : "")}>
-                <li className="policyitem"><a className="policylink">Privacy policy</a></li>
-                <li className="policyitem"><a className="policylink">Agreement</a></li>
-                <li className="policyitem"><a className="policylink">Guide</a></li>
+                <li className="policyitem"><a className="policylink" onClick={() => alert("준비중입니다.")} style={{ cursor: "pointer" }}>Privacy policy</a></li>
+                <li className="policyitem"><a className="policylink" onClick={() => alert("준비중입니다.")} style={{ cursor: "pointer" }}>Agreement</a></li>
+                <li className="policyitem"><a className="policylink" onClick={() => alert("준비중입니다.")} style={{ cursor: "pointer" }}>Guide</a></li>
               </ul>
             </div>
           </div>
 
           {/* ── 오른쪽 ── */}
-          <div className="footerright pullright 1100">
+          <div className="footerright pullright clearfix">
             <div className="footercolumn pullleft">
               <div className="footertitle">Customer center</div>
               <p className="footertxt">1588. 3069</p>
