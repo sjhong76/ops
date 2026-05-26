@@ -1,6 +1,10 @@
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+
+import { setUser, logout } from "./store";
 
 import Header  from "./components/Header";
 import Footer  from "./components/Footer";
@@ -14,13 +18,55 @@ import ShopList from "./pages/ShopList";
 import Detail   from "./pages/Detail";
 import Cart     from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
-import Checkout from "./pages/Checkout";
+import Order   from "./pages/Order";
+
+/* ────────────────────────────────────────
+   PrivateRoute — 비로그인 접근 차단 (Shoppy 패턴)
+──────────────────────────────────────── */
+const PrivateRoute = ({ children }) => {
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+  return isLoggedIn ? children : <Navigate to="/Login" replace />;
+};
 
 function App() {
+  const dispatch    = useDispatch();
+  const authChecked = useSelector((state) => state.user.authChecked);
+
   const [prdlist, setPrdlist] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ── 서버에서 상품 목록 fetch
+  /* ── 앱 시작 시 1회 — RefreshToken으로 로그인 상태 복구 (Shoppy 패턴) */
+  useEffect(() => {
+    const restoreLogin = async () => {
+      try {
+        const res = await axios.post(
+          "/api/auth/refresh",
+          {},
+          {
+            withCredentials:  true,
+            validateStatus:   (status) => status < 500,  // 401도 throw 안 함
+          }
+        );
+
+        if (res.status === 200) {
+          dispatch(setUser({
+            uid:         res.data.uid,
+            userId:      res.data.userId,
+            accessToken: res.data.accessToken,
+          }));
+          console.log("✅ 로그인 복구 성공:", res.data.userId);
+        } else {
+          dispatch(logout());
+        }
+      } catch {
+        dispatch(logout());
+      }
+    };
+
+    restoreLogin();
+  }, [dispatch]);
+
+  /* ── 상품 목록 fetch */
   useEffect(() => {
     fetch("/api/products")
       .then((res) => res.json())
@@ -34,6 +80,8 @@ function App() {
       });
   }, []);
 
+  /* ── authChecked 완료 전까지 렌더링 보류 (깜빡임 방지) */
+  if (!authChecked) return null;
   if (loading) return <div className="loading">로딩 중...</div>;
 
   return (
@@ -51,19 +99,21 @@ function App() {
         <Route path="/shop/gift"      element={<ShopList prdlist={prdlist} category="선물세트" />} />
         <Route path="/shop/cake"      element={<ShopList prdlist={prdlist} category="케이크" />} />
 
-        {/* 상세 / 장바구니 */}
+        {/* 상세 */}
         <Route path="/detail/:id"     element={<Detail prdlist={prdlist} />} />
-        <Route path="/cart"           element={<Cart />} />
-        <Route path="/checkout"       element={<Checkout/>}/>
+
+        {/* 로그인 필요한 페이지 — PrivateRoute 적용 */}
+        <Route path="/cart"     element={<PrivateRoute><Cart /></PrivateRoute>} />
+        <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
+        <Route path="/order"    element={<PrivateRoute><Order /></PrivateRoute>} />
 
         {/* 정보 페이지 */}
-        <Route path="/About"          element={<About />} />
-        <Route path="/Member"         element={<Member />} />
+        <Route path="/About"    element={<About />} />
+        <Route path="/Member"   element={<Member />} />
 
         {/* 인증 */}
-        <Route path="/Login"          element={<Login />} />
-        <Route path="/Join"           element={<Join />} />
-        <Route path="/wishlist"        element={<Wishlist />} />
+        <Route path="/Login"    element={<Login />} />
+        <Route path="/Join"     element={<Join />} />
       </Routes>
 
       <Footer />

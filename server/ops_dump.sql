@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS review (
 );
 
 -- ── 상품 초기 데이터 (products.js 기준)
+-- 패스워드: 1234 -> bcrypt로 암호화된 값(해시값)
 INSERT INTO user (id, pwd, name, phone, email) VALUES
 ("user1", "$2a$10$HboG0qm.mvIKUoXd7zBNy.5YjNerwdX34knmd093YDFdHGrFdhoom", "kim", "01011112222", "0000@gmail.com");
 
