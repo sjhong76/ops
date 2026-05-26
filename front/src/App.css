@@ -3490,3 +3490,11 @@ input[type=checkbox] + label {
 .payresult-success { border-color: #2E8B57; }
 .payresult-fail    { border-color: #e74c3c; }
 .payresult-cancel  { border-color: #888; }
+.order-terms input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}

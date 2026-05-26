@@ -35,6 +35,6 @@ app.use('/api/wishlist', wishlistRouter);
 app.use('/api/kakao',    kakaoRouter);
 
 // ── 서버 시작
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ OPS 서버 실행 => http://localhost:${PORT}`);
 });
