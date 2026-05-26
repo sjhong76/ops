@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";  // 2026-05-26 insung useEffect 추가(로그인하자마자 관심상품 개수 서버에서 연동하기 위해)
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logout, setWishCount } from "../store";  // 2026-05-26 insung setWishCount 추가(관심상품 개수 서버에서 연동하기 위해)
 import { logout } from "../store";
 import { axiosPost } from "../utils/dataFetch";
 
@@ -22,21 +21,8 @@ export default function Header() {
   const dispatch    = useDispatch();
   const [sswitch, setSswitch] = useState(false);
 
-  // ── Redux에서 로그인 상태 읽기(2026-05-26 insung uid 추가)
- const { isLoggedIn, userId, uid, wishCount } = useSelector((state) => state.user);
-
-// ── 관심상품 개수 서버에서 연동하기 위한 useEffect 추가(2026-05-26 insung)
-useEffect(() => {
-    // 로그인 상태가 아닐 때는 실행하지 않고 즉시 종료
-    if (!isLoggedIn) return;
-
-    // 로그인 상태일 때 서버에서 관심상품 개수 fetch하여 Redux에 저장
-    fetch(`/api/wishlist/${uid}`)
-      .then((res) => res.json())
-      .then((data) => dispatch(setWishCount(data.length)));
-
-  }, [isLoggedIn, uid, dispatch]);
-  // ── 추가 / 수정 끝(2026-05-26 insung)
+  // ── Redux에서 로그인 상태 읽기
+  const { isLoggedIn, userId, wishCount, cartCount } = useSelector((state) => state.user);
 
   const handleLogout = async () => {
     try {
@@ -127,8 +113,12 @@ useEffect(() => {
                   <span className="icon-badge">{wishCount}</span>
                 )}
               </a>
-              <a className="iconmenuitem" onClick={() => navigate("/cart")}>
+              <a className="iconmenuitem" style={{ position: "relative" }}
+                onClick={() => navigate("/cart")}>
                 <img src="/img/cart.png" style={{ width: "20px", height: "20px" }} alt="cart" />
+                {isLoggedIn && cartCount > 0 && (
+                  <span className="icon-badge">{cartCount}</span>
+                )}
               </a>
             </div>
           </div>

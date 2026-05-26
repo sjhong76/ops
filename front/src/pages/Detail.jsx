@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setWishCount } from "../store";
+import { setWishCount, setCartCount } from "../store";
 import { axiosPost } from "../utils/dataFetch";
 import { formatPrice } from "../utils/cart";
 
@@ -132,6 +132,9 @@ export default function Detail({ prdlist }) {
         pid:   selProduct.id,
         count: qttval,
       });
+      // 장바구니 카운트 업데이트
+      const cartData = await (await fetch(`/api/cart/${uid}`)).json();
+      dispatch(setCartCount(cartData.reduce((sum, item) => sum + item.count, 0)));
       setShowPopup(true);
     } catch (err) {
       console.error("장바구니 담기 실패:", err);

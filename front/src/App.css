@@ -3451,3 +3451,42 @@ input[type=checkbox] + label {
 .order-terms span { color: #e74c3c; font-size: 12px; }
 .order-pay-btn { max-width: 900px; margin: 0 auto 60px; }
 .order-pay-btn button { width: 100%; padding: 18px; font-size: 16px; font-weight: bold; }
+
+/* ── 결제 완료 페이지 */
+.payresult-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+}
+.payresult-box {
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  padding: 50px 40px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+.payresult-icon { font-size: 60px; margin-bottom: 20px; }
+.payresult-box h2 { font-size: 22px; font-weight: bold; margin-bottom: 10px; color: #222; }
+.payresult-box p  { font-size: 14px; color: #666; margin-bottom: 30px; }
+.payresult-info {
+  background: #f9f9f9;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+.payresult-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+.payresult-info-row:last-child { border-bottom: none; }
+.payresult-info-row span  { color: #666; }
+.payresult-info-row strong { color: #222; }
+.payresult-btns { display: flex; gap: 10px; justify-content: center; }
+.payresult-success { border-color: #2E8B57; }
+.payresult-fail    { border-color: #e74c3c; }
+.payresult-cancel  { border-color: #888; }

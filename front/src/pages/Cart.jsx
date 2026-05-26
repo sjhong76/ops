@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setCartCount } from "../store";
 import { axiosGet, axiosPatch, axiosDelete } from "../utils/dataFetch";
 import { getDeliveryFee, formatPrice } from "../utils/cart";
 
 export default function Cart() {
   const navigate   = useNavigate();
+  const dispatch   = useDispatch();
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const uid        = useSelector((state) => state.user.uid);
 
@@ -23,6 +25,7 @@ export default function Cart() {
     try {
       const data = await axiosGet(`/cart/${uid}`);
       setCartItems(data);
+      dispatch(setCartCount(data.reduce((sum, item) => sum + item.count, 0)));
     } catch (err) {
       console.error("장바구니 로딩 실패:", err);
     } finally {
