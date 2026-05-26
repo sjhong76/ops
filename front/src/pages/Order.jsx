@@ -186,16 +186,20 @@ export default function Order() {
 
         {/* ── 약관 동의 ── */}
         <div className="order-terms">
-          <label>
-            <input type="checkbox" checked={terms}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <input type="checkbox" id="terms" checked={terms}
               onChange={(e) => setTerms(e.target.checked)} />
-            구매조건 확인 및 결제대행 서비스 약관 동의 <span>(필수)</span>
-          </label>
-          <label>
-            <input type="checkbox" checked={privacy}
+            <label htmlFor="terms">
+              구매조건 확인 및 결제대행 서비스 약관 동의 <span>(필수)</span>
+            </label>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <input type="checkbox" id="privacy" checked={privacy}
               onChange={(e) => setPrivacy(e.target.checked)} />
-            개인정보 국외 이전 동의 <span>(필수)</span>
-          </label>
+            <label htmlFor="privacy">
+              개인정보 국외 이전 동의 <span>(필수)</span>
+            </label>
+          </div>
         </div>
 
         {/* ── 결제 버튼 ── */}
