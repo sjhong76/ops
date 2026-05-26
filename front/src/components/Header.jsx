@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";  // 2026-05-26 insung useEffect 추
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout, setWishCount } from "../store";  // 2026-05-26 insung setWishCount 추가(관심상품 개수 서버에서 연동하기 위해)
+import { logout } from "../store";
+import { axiosPost } from "../utils/dataFetch";
 
 const SHOP_MENUS = [
   { label: "빵",     path: "/shop/bread" },
@@ -36,7 +38,12 @@ useEffect(() => {
   }, [isLoggedIn, uid, dispatch]);
   // ── 추가 / 수정 끝(2026-05-26 insung)
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await axiosPost("/auth/logout");  // 서버 쿠키 삭제
+    } catch (err) {
+      console.error("로그아웃 오류:", err);
+    }
     dispatch(logout());
     navigate("/");
   };
@@ -145,5 +152,4 @@ useEffect(() => {
       </div>
     </header>
   );
-  
 }
