@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addItem, setWishCount } from "../store";
+import { setWishCount } from "../store";
+import { axiosPost } from "../utils/dataFetch";
 import { formatPrice } from "../utils/cart";
 
 // ── 별점 렌더링 헬퍼
@@ -101,18 +102,23 @@ export default function Detail({ prdlist }) {
   };
   const upqttHandler = () => setQttval((q) => q + 1);
 
-  // ── 장바구니 담기
-  const handleAddCart = () => {
+  // ── 장바구니 담기 → DB API 연동
+  const handleAddCart = async () => {
     if (!isLoggedIn) {
       alert("로그인이 필요한 서비스입니다.");
       navigate("/Login");
       return;
     }
-    dispatch(addItem({
-      id: selProduct.id, name: selProduct.title,
-      imgurl: selProduct.imgurl, ogprice: productPrice, count: qttval,
-    }));
-    setShowPopup(true);
+    try {
+      await axiosPost("/cart", {
+        uid,
+        pid:   selProduct.id,
+        count: qttval,
+      });
+      setShowPopup(true);
+    } catch (err) {
+      console.error("장바구니 담기 실패:", err);
+    }
   };
 
   // ── 리뷰 작성 제출

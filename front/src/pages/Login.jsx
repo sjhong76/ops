@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUser } from "../store";
+import { axiosPost } from "../utils/dataFetch";
 
 export default function Login() {
   const navigate  = useNavigate();
@@ -33,24 +34,21 @@ export default function Login() {
     }
 
     try {
-      const res  = await fetch("/api/auth/login", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ id: formData.id, pwd: formData.pwd }),
+      // axiosPost 사용 — withCredentials로 RefreshToken 쿠키 자동 수신
+      const data = await axiosPost("/auth/login", {
+        id:  formData.id,
+        pwd: formData.pwd,
       });
-      const data = await res.json();
 
-      if (!res.ok) {
-        setErrors((p) => ({ ...p, pwd: data.message || "로그인에 실패했습니다." }));
-        return;
-      }
-
-      // ── Redux store에 로그인 상태 저장 (Header 즉시 반영)
-      dispatch(setUser({ uid: data.uid, userId: data.userId, accessToken: data.accessToken }));
+      dispatch(setUser({
+        uid:         data.uid,
+        userId:      data.userId,
+        accessToken: data.accessToken,
+      }));
       navigate("/");
     } catch (err) {
-      console.error("로그인 오류:", err);
-      setErrors((p) => ({ ...p, pwd: "서버 연결에 실패했습니다." }));
+      const msg = err.response?.data?.message || "로그인에 실패했습니다.";
+      setErrors((p) => ({ ...p, pwd: msg }));
     }
   };
 
