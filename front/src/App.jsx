@@ -14,6 +14,7 @@ import ShopList from "./pages/ShopList";
 import Detail   from "./pages/Detail";
 import Cart     from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
+import Checkout from "./pages/Checkout";
 
 function App() {
   const [prdlist, setPrdlist] = useState([]);
@@ -53,6 +54,7 @@ function App() {
         {/* 상세 / 장바구니 */}
         <Route path="/detail/:id"     element={<Detail prdlist={prdlist} />} />
         <Route path="/cart"           element={<Cart />} />
+        <Route path="/checkout"       element={<Checkout/>}/>
 
         {/* 정보 페이지 */}
         <Route path="/About"          element={<About />} />

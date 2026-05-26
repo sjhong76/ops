@@ -165,7 +165,7 @@ export default function Cart() {
 
               <div className="ecbasebutton">
                 <a className="btnsubmit gfull sizel"
-                  onClick={() => navigate("/")}>
+                  onClick={() => navigate("/checkout")}>
                   전체상품주문
                 </a>
                 <a className="btnnormal gfull sizel">선택상품주문</a>
