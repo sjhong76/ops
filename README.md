@@ -18,3 +18,29 @@
 
 5) 회원가입(users) 테이블 생성
     -> front에서 겹치는 부분 일부 삭제 예정(회원가입 페이지 하단 지역 삭제 예정)
+
+
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD="!43tokII"
+DB_NAME=ops
+DB_PORT=3306
+
+SERVER_PORT=9000
+JWT_SECRET=ops_jwt_secret_key_change_this
+
+# JWT 토큰 설정 (Shoppy 패턴)
+ACCESS_SECRET=ops_access_secret_key_change_this
+REFRESH_SECRET=ops_refresh_secret_key_change_this
+ACCESS_EXPIRES=15m
+REFRESH_EXPIRES=7d
+
+# 프론트 주소 (CORS)
+# CLIENT_ORIGIN=http://localhost:3000
+
+# 카카오페이
+KAKAO_SECRET_KEY=자기꼬
+# SERVER_URL=http://localhost:9000
+
+SERVER_URL=http://192.168.자기IP:9000
+CLIENT_ORIGIN=http://192.168.자기IP:3000
