@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 
-import { setUser, logout } from "./store";
+import { setUser, logout, setCartCount, setWishCount } from "./store";
 
 import Header  from "./components/Header";
 import Footer  from "./components/Footer";
@@ -18,7 +18,8 @@ import ShopList from "./pages/ShopList";
 import Detail   from "./pages/Detail";
 import Cart     from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
-import Order   from "./pages/Order";
+import Order     from "./pages/Order";
+import PayResult from "./pages/PayResult";
 
 /* ────────────────────────────────────────
    PrivateRoute — 비로그인 접근 차단 (Shoppy 패턴)
@@ -54,6 +55,18 @@ function App() {
             userId:      res.data.userId,
             accessToken: res.data.accessToken,
           }));
+          // 장바구니 카운트 복구
+          try {
+            const cartRes = await fetch(`/api/cart/${res.data.uid}`);
+            const cartData = await cartRes.json();
+            dispatch(setCartCount(cartData.reduce((sum, item) => sum + item.count, 0)));
+          } catch {}
+          // 관심상품 카운트 복구
+          try {
+            const wishRes = await fetch(`/api/wishlist/${res.data.uid}`);
+            const wishData = await wishRes.json();
+            dispatch(setWishCount(wishData.length));
+          } catch {}
           console.log("✅ 로그인 복구 성공:", res.data.userId);
         } else {
           dispatch(logout());
@@ -105,7 +118,8 @@ function App() {
         {/* 로그인 필요한 페이지 — PrivateRoute 적용 */}
         <Route path="/cart"     element={<PrivateRoute><Cart /></PrivateRoute>} />
         <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
-        <Route path="/order"    element={<PrivateRoute><Order /></PrivateRoute>} />
+        <Route path="/order"     element={<PrivateRoute><Order /></PrivateRoute>} />
+        <Route path="/payresult" element={<PayResult />} />
 
         {/* 정보 페이지 */}
         <Route path="/About"    element={<About />} />

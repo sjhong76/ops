@@ -14,6 +14,7 @@ let user = createSlice({
     isLoggedIn:   false,
     authChecked:  false,   // ← 새로고침 시 깜빡임 방지
     wishCount:    0,
+    cartCount:    0,
   },
   reducers: {
     setUser(state, action) {
@@ -22,9 +23,13 @@ let user = createSlice({
       state.accessToken = action.payload.accessToken;
       state.isLoggedIn  = true;
       state.authChecked = true;
+      state.cartCount   = 0;
     },
     setWishCount(state, action) {
       state.wishCount = action.payload;
+    },
+    setCartCount(state, action) {
+      state.cartCount = action.payload;
     },
     logout(state) {
       state.uid         = null;
@@ -33,11 +38,12 @@ let user = createSlice({
       state.isLoggedIn  = false;
       state.authChecked = true;
       state.wishCount   = 0;
+      state.cartCount   = 0;
     },
   },
 });
 
-export let { setUser, logout, setWishCount } = user.actions;
+export let { setUser, logout, setWishCount, setCartCount } = user.actions;
 
 /* ────────────────────────────────────────
    cart slice
