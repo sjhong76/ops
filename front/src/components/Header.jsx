@@ -23,6 +23,9 @@ export default function Header() {
   // ── Redux에서 로그인 상태 읽기
   const { isLoggedIn, userId, wishCount } = useSelector((state) => state.user);
 
+  const cartItems = useSelector((state) => state.cart) || [];
+  // console.log(cartItems);
+  
   const handleLogout = () => {
     dispatch(logout());
     navigate("/");
@@ -100,6 +103,7 @@ export default function Header() {
               <a className="iconmenuitem" onClick={() => setSswitch(true)}>
                 <img src="/img/search.png" style={{ width: "18px", height: "18px" }} alt="search" />
               </a>
+              {/* 위시리스트 */}
               <a className="iconmenuitem" style={{ position: "relative" }}
                 onClick={() => isLoggedIn ? navigate("/wishlist") : navigate("/Login")}>
                 <img src="/img/heart.png" style={{ width: "18px", height: "18px" }} alt="wishlist" />
@@ -107,8 +111,12 @@ export default function Header() {
                   <span className="icon-badge">{wishCount}</span>
                 )}
               </a>
-              <a className="iconmenuitem" onClick={() => navigate("/cart")}>
+              {/* 장바구니 */}
+              <a className="iconmenuitem" style={{ position: "relative" }} onClick={() => navigate("/cart")}>
                 <img src="/img/cart.png" style={{ width: "20px", height: "20px" }} alt="cart" />
+                {isLoggedIn && cartItems.length > 0 && (
+                  <span className="icon-badge">{cartItems.length}</span>
+                )}
               </a>
             </div>
           </div>
