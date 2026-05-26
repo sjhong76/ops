@@ -1,49 +1,49 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 
 /* ────────────────────────────────────────
-   user slice - localStorage에서 초기값 복원
+   user slice
+   - authChecked: false → refresh 완료 전까지 렌더링 보류 (Shoppy 패턴)
+   - AccessToken은 메모리(Redux)에만 저장 (localStorage 제거)
 ──────────────────────────────────────── */
-const savedUser = {
-  uid:         Number(localStorage.getItem("uid"))      || null,
-  userId:      localStorage.getItem("userId")           || "",
-  accessToken: localStorage.getItem("accessToken")      || "",
-  isLoggedIn:  !!localStorage.getItem("accessToken"),
-  wishCount:   Number(localStorage.getItem("wishCount")) || 0,
-};
-
 let user = createSlice({
   name: "user",
-  initialState: savedUser,
+  initialState: {
+    uid:          null,
+    userId:       "",
+    accessToken:  "",
+    isLoggedIn:   false,
+    authChecked:  false,   // ← 새로고침 시 깜빡임 방지
+    wishCount:    0,
+    cartCount:    0,
+  },
   reducers: {
     setUser(state, action) {
       state.uid         = action.payload.uid;
       state.userId      = action.payload.userId;
       state.accessToken = action.payload.accessToken;
       state.isLoggedIn  = true;
-      state.wishCount  = 0;
-      localStorage.setItem("uid",         action.payload.uid);
-      localStorage.setItem("userId",      action.payload.userId);
-      localStorage.setItem("accessToken", action.payload.accessToken);
+      state.authChecked = true;
+      state.cartCount   = 0;
     },
     setWishCount(state, action) {
       state.wishCount = action.payload;
-      localStorage.setItem("wishCount", action.payload);
+    },
+    setCartCount(state, action) {
+      state.cartCount = action.payload;
     },
     logout(state) {
       state.uid         = null;
       state.userId      = "";
       state.accessToken = "";
       state.isLoggedIn  = false;
-      state.wishCount  = 0;
-      localStorage.removeItem("uid");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("wishCount");
+      state.authChecked = true;
+      state.wishCount   = 0;
+      state.cartCount   = 0;
     },
   },
 });
 
-export let { setUser, logout, setWishCount } = user.actions;
+export let { setUser, logout, setWishCount, setCartCount } = user.actions;
 
 /* ────────────────────────────────────────
    cart slice

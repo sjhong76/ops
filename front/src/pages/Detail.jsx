@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addItem, setWishCount } from "../store";
+import { setWishCount, setCartCount } from "../store";
+import { axiosPost } from "../utils/dataFetch";
 import { formatPrice } from "../utils/cart";
 
 // ── 별점 렌더링 헬퍼
@@ -46,6 +47,23 @@ export default function Detail({ prdlist }) {
   const [showForm,    setShowForm]    = useState(false);
   const [newReview,   setNewReview]   = useState({ content: "", rating: 5 });
   const [submitMsg,   setSubmitMsg]   = useState("");
+
+  const handleDirectOrder = () => {
+  if (!isLoggedIn) {
+    alert("로그인이 필요한 서비스입니다.");
+    navigate("/Login");
+    return;
+  }
+
+  // 🔥 핵심: 리덕스 장바구니에 담지 않고, '바로구매용 상품 구조'를 그 자리에서 조립!
+  const directOrderItem = {
+    id: selProduct.id,
+    name: selProduct.title,
+    imgurl: selProduct.imgurl,
+    ogprice: productPrice,
+    count: qttval, // 상세페이지에서 선택한 수량
+  };
+  navigate("/checkout", { state: { directItem: directOrderItem } });};
 
   useEffect(() => {
     setFade("end");
@@ -101,18 +119,26 @@ export default function Detail({ prdlist }) {
   };
   const upqttHandler = () => setQttval((q) => q + 1);
 
-  // ── 장바구니 담기
-  const handleAddCart = () => {
+  // ── 장바구니 담기 → DB API 연동
+  const handleAddCart = async () => {
     if (!isLoggedIn) {
       alert("로그인이 필요한 서비스입니다.");
       navigate("/Login");
       return;
     }
-    dispatch(addItem({
-      id: selProduct.id, name: selProduct.title,
-      imgurl: selProduct.imgurl, ogprice: productPrice, count: qttval,
-    }));
-    setShowPopup(true);
+    try {
+      await axiosPost("/cart", {
+        uid,
+        pid:   selProduct.id,
+        count: qttval,
+      });
+      // 장바구니 카운트 업데이트
+      const cartData = await (await fetch(`/api/cart/${uid}`)).json();
+      dispatch(setCartCount(cartData.reduce((sum, item) => sum + item.count, 0)));
+      setShowPopup(true);
+    } catch (err) {
+      console.error("장바구니 담기 실패:", err);
+    }
   };
 
   // ── 리뷰 작성 제출
@@ -252,7 +278,7 @@ export default function Detail({ prdlist }) {
 
                 <div className="productaction xansproductaction">
                   <div className="flex">
-                    <a className="btnsubmit gfull sizel"><span>바로구매</span></a>
+                    <a className="btnsubmit gfull sizel" onClick={handleDirectOrder}><span>바로구매</span></a>
                     <span className="gactionbuttoncolumn">
                       <button type="button" className="btnnormal sizel actioncart" onClick={handleAddCart}>
                         <span><img src="/img/iconcart.svg" style={{ width: "15px", height: "15px" }} alt="cart" /></span>
