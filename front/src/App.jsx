@@ -6,9 +6,8 @@ import axios from "axios";
 
 import { setUser, logout, setCartCount, setWishCount } from "./store";
 
-import Header  from "./components/Header";
-import Footer  from "./components/Footer";
-
+import Header   from "./components/Header";
+import Footer   from "./components/Footer";
 import Home     from "./pages/Home";
 import About    from "./pages/About";
 import Member   from "./pages/Member";
@@ -18,12 +17,9 @@ import ShopList from "./pages/ShopList";
 import Detail   from "./pages/Detail";
 import Cart     from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
-import Order     from "./pages/Order";
+import Order    from "./pages/Order";
 import PayResult from "./pages/PayResult";
 
-/* ────────────────────────────────────────
-   PrivateRoute — 비로그인 접근 차단 (Shoppy 패턴)
-──────────────────────────────────────── */
 const PrivateRoute = ({ children }) => {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   return isLoggedIn ? children : <Navigate to="/Login" replace />;
@@ -32,21 +28,17 @@ const PrivateRoute = ({ children }) => {
 function App() {
   const dispatch    = useDispatch();
   const authChecked = useSelector((state) => state.user.authChecked);
-
   const [prdlist, setPrdlist] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* ── 앱 시작 시 1회 — RefreshToken으로 로그인 상태 복구 (Shoppy 패턴) */
+  /* ── 앱 시작 시 RefreshToken으로 로그인 복구 */
   useEffect(() => {
     const restoreLogin = async () => {
       try {
         const res = await axios.post(
           "/api/auth/refresh",
           {},
-          {
-            withCredentials:  true,
-            validateStatus:   (status) => status < 500,  // 401도 throw 안 함
-          }
+          { withCredentials: true, validateStatus: (s) => s < 500 }
         );
 
         if (res.status === 200) {
@@ -55,18 +47,23 @@ function App() {
             userId:      res.data.userId,
             accessToken: res.data.accessToken,
           }));
-          // 장바구니 카운트 복구
+
+          // 장바구니 + 관심상품 카운트 동시 복구
           try {
-            const cartRes = await fetch(`/api/cart/${res.data.uid}`);
-            const cartData = await cartRes.json();
+            const [cartRes, wishRes] = await Promise.all([
+              fetch(`/api/cart/${res.data.uid}`),
+              fetch(`/api/wishlist/${res.data.uid}`),
+            ]);
+            const [cartData, wishData] = await Promise.all([
+              cartRes.json(),
+              wishRes.json(),
+            ]);
             dispatch(setCartCount(cartData.reduce((sum, item) => sum + item.count, 0)));
-          } catch {}
-          // 관심상품 카운트 복구
-          try {
-            const wishRes = await fetch(`/api/wishlist/${res.data.uid}`);
-            const wishData = await wishRes.json();
             dispatch(setWishCount(wishData.length));
-          } catch {}
+          } catch (err) {
+            console.error("카운트 복구 실패:", err);
+          }
+
           console.log("✅ 로그인 복구 성공:", res.data.userId);
         } else {
           dispatch(logout());
@@ -83,55 +80,35 @@ function App() {
   useEffect(() => {
     fetch("/api/products")
       .then((res) => res.json())
-      .then((data) => {
-        setPrdlist(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("상품 로딩 실패:", err);
-        setLoading(false);
-      });
+      .then((data) => { setPrdlist(data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
-  /* ── authChecked 완료 전까지 렌더링 보류 (깜빡임 방지) */
   if (!authChecked) return null;
   if (loading) return <div className="loading">로딩 중...</div>;
 
   return (
     <div className="App">
       <Header />
-
       <Routes>
         <Route path="/"               element={<Home prdlist={prdlist} />} />
-
-        {/* Shop */}
         <Route path="/shop"           element={<ShopList prdlist={prdlist} category="전체" />} />
         <Route path="/shop/bread"     element={<ShopList prdlist={prdlist} category="빵" />} />
         <Route path="/shop/cookie"    element={<ShopList prdlist={prdlist} category="쿠키" />} />
         <Route path="/shop/chocolate" element={<ShopList prdlist={prdlist} category="초콜렛" />} />
         <Route path="/shop/gift"      element={<ShopList prdlist={prdlist} category="선물세트" />} />
         <Route path="/shop/cake"      element={<ShopList prdlist={prdlist} category="케이크" />} />
-
-        {/* 상세 */}
         <Route path="/detail/:id"     element={<Detail prdlist={prdlist} />} />
-
-        {/* 로그인 필요한 페이지 — PrivateRoute 적용 */}
-        <Route path="/cart"     element={<PrivateRoute><Cart /></PrivateRoute>} />
-        <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
+        <Route path="/cart"      element={<PrivateRoute><Cart /></PrivateRoute>} />
+        <Route path="/wishlist"  element={<PrivateRoute><Wishlist /></PrivateRoute>} />
         <Route path="/order"     element={<PrivateRoute><Order /></PrivateRoute>} />
         <Route path="/payresult" element={<PayResult />} />
-
-        {/* 정보 페이지 */}
-        <Route path="/About"    element={<About />} />
-        <Route path="/Member"   element={<Member />} />
-
-        {/* 인증 */}
-        <Route path="/Login"    element={<Login />} />
-        <Route path="/Join"     element={<Join />} />
+        <Route path="/About"     element={<About />} />
+        <Route path="/Member"    element={<Member />} />
+        <Route path="/Login"     element={<Login />} />
+        <Route path="/Join"      element={<Join />} />
       </Routes>
-
       <Footer />
-
       <div
         className="scrollbtn relative flex flexvcenter flexhcenter on"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
