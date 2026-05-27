@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
+import { useLocation } from 'react-router-dom';
 import { axiosGet, axiosPost } from "../utils/dataFetch";
 import { formatPrice, getDeliveryFee } from "../utils/cart";
 
 export default function Order() {
   const navigate   = useNavigate();
+  const location = useLocation();
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const uid        = useSelector((state) => state.user.uid);
   const userId     = useSelector((state) => state.user.userId);
@@ -19,14 +21,24 @@ export default function Order() {
   const [receiver,  setReceiver]  = useState({
     name: "", phone: "", zipcode: "", address1: "", address2: "", memo: "문앞에 놔주세요",
   });
+  const directItems = location.state?.directItems;
 
-  useEffect(() => {
-    if (!isLoggedIn || !uid) return;
-    axiosGet(`/cart/${uid}`)
-      .then((data) => setCartItems(data))
-      .catch((err) => console.error("장바구니 로딩 실패:", err))
-      .finally(() => setLoading(false));
-  }, [uid, isLoggedIn]);
+ useEffect(() => {
+    if (directItems && directItems.length > 0) {
+      setCartItems(directItems);
+      setLoading(false);
+    } 
+    else {
+      if (!isLoggedIn || !uid) {
+        setLoading(false);
+        return;
+      }
+      axiosGet(`/cart/${uid}`)
+        .then((data) => setCartItems(data))
+        .catch((err) => console.error("장바구니 로딩 실패:", err))
+        .finally(() => setLoading(false));
+    }
+  }, [uid, isLoggedIn, directItems]);
 
   const totalPrice  = cartItems.reduce((sum, item) => sum + item.ogprice * item.count, 0);
   const deliveryFee = getDeliveryFee(totalPrice);
