@@ -182,12 +182,14 @@ export default function Cart() {
                         <div className="prdbox">
                           
                           {/* 💡 체크박스 상태 바인딩 */}
-                          <input 
-                            type="checkbox" 
-                            className="check" 
-                            checked={checkedCids.includes(item.cid)}
-                            onChange={() => handleCheckToggle(item.cid)}
-                          />
+                          <label className="check-label" style={{display:"flex", alignItems:"center", cursor:"pointer"}}>
+                            <input 
+                              type="checkbox" 
+                              className="check hidden-check" // 💡 기본 체크박스를 숨길 클래스 추가
+                              checked={checkedCids.includes(item.cid)}
+                              onChange={() => handleCheckToggle(item.cid)}/>
+                            <span className="check-mark"></span>
+                          </label>
 
                           <Link className="thumbnail" to={`/detail/${item.pid}`}>
                             <img src={item.imgurl} alt={item.name}

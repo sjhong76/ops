@@ -343,6 +343,26 @@ strong {
   font-size: 14px;
 }
 
+.hidden-check {
+  display: none !important;
+}
+.check-mark {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #000; 
+  position: relative;
+  transition: all 0.2s ease;
+  background-color: #fff;
+  margin-right: 10px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.hidden-check:checked + .check-mark {
+  background-color: #f5a623;
+  border-color: #f5a623;
+}
+
 input[type="text"] {
   appearance: none;
   line-height: 40px;
