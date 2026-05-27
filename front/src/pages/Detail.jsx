@@ -49,22 +49,23 @@ export default function Detail({ prdlist }) {
   const [submitMsg,   setSubmitMsg]   = useState("");
 
   const handleDirectOrder = () => {
-  if (!isLoggedIn) {
-    alert("로그인이 필요한 서비스입니다.");
-    navigate("/Login");
-    return;
-  }
+    if (!isLoggedIn) {
+      alert("로그인이 필요한 서비스입니다.");
+      navigate("/Login");
+      return;
+    }
 
-  // 🔥 핵심: 리덕스 장바구니에 담지 않고, '바로구매용 상품 구조'를 그 자리에서 조립!
-  const directOrderItem = {
-    id: selProduct.id,
-    name: selProduct.title,
-    imgurl: selProduct.imgurl,
-    ogprice: productPrice,
-    count: qttval, // 상세페이지에서 선택한 수량
+    const directOrderItem = {
+      cid: selProduct.id,   
+      name: selProduct.title,
+      imgurl: selProduct.imgurl,
+      ogprice: productPrice, 
+      count: qttval,        
+    };
+    navigate("/order", { state: { directItems: [directOrderItem] } });
   };
-  navigate("/checkout", { state: { directItem: directOrderItem } });};
 
+  
   useEffect(() => {
     setFade("end");
     return () => setFade("");
