@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setUser } from "../store";
+import { setUser, setCartCount, setWishCount } from "../store";
 import { axiosPost } from "../utils/dataFetch";
 
 export default function Login() {
@@ -34,7 +34,6 @@ export default function Login() {
     }
 
     try {
-      // axiosPost 사용 — withCredentials로 RefreshToken 쿠키 자동 수신
       const data = await axiosPost("/auth/login", {
         id:  formData.id,
         pwd: formData.pwd,
@@ -45,6 +44,21 @@ export default function Login() {
         userId:      data.userId,
         accessToken: data.accessToken,
       }));
+
+      // ── 로그인 즉시 장바구니 + 관심상품 카운트 fetch
+      try {
+        const [cartRes, wishRes] = await Promise.all([
+          fetch(`/api/cart/${data.uid}`),
+          fetch(`/api/wishlist/${data.uid}`),
+        ]);
+        const [cartData, wishData] = await Promise.all([
+          cartRes.json(),
+          wishRes.json(),
+        ]);
+        dispatch(setCartCount(cartData.reduce((sum, item) => sum + item.count, 0)));
+        dispatch(setWishCount(wishData.length));
+      } catch {}
+
       navigate("/");
     } catch (err) {
       const msg = err.response?.data?.message || "로그인에 실패했습니다.";
