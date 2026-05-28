@@ -1,5 +1,5 @@
 -- OPS Bakery Database
-DROP DATABASE ops; -- ops 삭제 명령어
+-- DROP DATABASE ops; -- ops 삭제 명령어
 CREATE DATABASE IF NOT EXISTS ops DEFAULT CHARACTER SET utf8mb4;
 USE ops;
 show tables;
@@ -74,7 +74,8 @@ CREATE TABLE IF NOT EXISTS review (
 -- 패스워드: 1234 -> bcrypt로 암호화된 값(해시값)
 INSERT INTO user (id, pwd, name, phone, email) VALUES
 ("user1", "$2a$10$HboG0qm.mvIKUoXd7zBNy.5YjNerwdX34knmd093YDFdHGrFdhoom", "kim", "01011112222", "0000@gmail.com");
-
+delete from user where id="user1";
+select * from user;
 INSERT INTO product (name, price, category, edate, smethod, imgurl, icon) VALUES
 ('갸또 쇼콜라',                '38000', '케이크', '제조일로부터 5일',          '냉장보관',                                            'product1.jpg',  ''),
 ('쉭쎄',                      '29000', '케이크', '제조일로부터 8일',          '냉장보관',                                            'product2.jpg',  ''),
@@ -108,3 +109,6 @@ INSERT INTO review (pid, uid, content, rating) VALUES
 select * from review;
 select * from product;
 select * from user;
+select * from wishlist where uid=8;
+select * from cart where uid = 5;
+

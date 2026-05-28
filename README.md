@@ -44,3 +44,30 @@ KAKAO_SECRET_KEY=자기꼬
 
 SERVER_URL=http://192.168.자기IP:9000
 CLIENT_ORIGIN=http://192.168.자기IP:3000
+
+## 2026-05-28 env 파일 수정 내용
+
+DB_HOST=mysql.c50802k0cnyg.ap-northeast-2.rds.amazonaws.com
+DB_USER=admin
+DB_PASSWORD=mysql1234
+DB_NAME=ops
+DB_PORT=3306
+
+SERVER_PORT=9000
+JWT_SECRET=ops_jwt_secret_key_change_this
+
+# JWT 토큰 설정 (Shoppy 패턴)
+ACCESS_SECRET=ops_access_secret_key_change_this
+REFRESH_SECRET=ops_refresh_secret_key_change_this
+ACCESS_EXPIRES=15m
+REFRESH_EXPIRES=7d
+
+# 프론트 주소 (CORS)
+# CLIENT_ORIGIN=http://localhost:3000
+
+# 카카오페이
+KAKAO_SECRET_KEY=y DEV53C790702C28A6861D266445C43A637E4CFE9
+# SERVER_URL=http://localhost:9000
+
+SERVER_URL=http://192.168.7.25:9000
+CLIENT_ORIGIN=http://192.168.7.25:3000
