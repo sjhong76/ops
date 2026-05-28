@@ -10,6 +10,7 @@ export default function Cart() {
   const dispatch   = useDispatch();
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const uid        = useSelector((state) => state.user.uid);
+  const currentWishCount = useSelector((state) => state.user.wishCount);
 
   const [cartItems, setCartItems] = useState([]);
   const [loading,   setLoading]   = useState(true);
@@ -53,22 +54,53 @@ export default function Cart() {
     }
   };
 
-  // ── 💡 찜 토글 기능 최종 수정 (이름 충돌 제거 및 pid 매핑)
+  // 2026-05-28 insung 수정 관심상품 버튼 클릭시, 관심 상품 등록 및 이동(등록되어 있으면 이동하지 않고 중복 메세지 알림)
+  // ── 💡 관심상품 토글 기능 및 페이지 이동 추가 (이름 충돌 제거 및 pid 매핑)
   const handleToggleWish = async (item) => {
-    if (!isLoggedIn) { alert("로그인이 필요합니다."); navigate("/Login"); return; }
+    if (!isLoggedIn) { 
+      alert("로그인이 필요합니다."); 
+      navigate("/Login"); 
+      return; 
+    }
     try {
-      const res  = await fetch("/api/wishlist", {
-        method:  "POST",
+      // 1차 POST 요청 (토글 실행)
+      const res = await fetch("/api/wishlist", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ uid, pid: Number(item.pid) }), // 💡 id ➔ pid로 정확히 수정!
+        body: JSON.stringify({ uid, pid: Number(item.pid) }),
       });
+      
+      if (!res.ok) throw new Error("서버 통신 실패");
       const data = await res.json();
-      dispatch(setWishCount(data.wishCount)); // 💡 이제 리덕스 액션이 완벽하게 실행됩니다!
-      // alert("관심상품 상태가 변경되었습니다.");
+      
+      // 백엔드가 준 새로운 카운트가 기존(currentWishCount)보다 작아졌다면? -> '이미 등록되어 있던 상품'
+      if (data.wishCount < currentWishCount) { 
+        alert("이미 관심상품에 등록되어 있는 상품입니다.");
+        
+        // 롤백: 토글을 한 번 더 호출하여 다시 '등록' 상태로 원복시킵니다.
+        const rollbackRes = await fetch("/api/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uid, pid: Number(item.pid) }),
+        });
+        
+        if (!rollbackRes.ok) throw new Error("롤백 통신 실패");
+        const rollbackData = await rollbackRes.json();
+        
+        // 리덕스 상태를 다시 등록 상태인 원래 카운트로 업데이트
+        dispatch(setWishCount(rollbackData.wishCount));
+      } else {
+        // 새로 정상 등록된 경우
+        dispatch(setWishCount(data.wishCount)); 
+        alert("관심상품에 등록되었습니다. 관심상품 페이지로 이동합니다.");
+        navigate("/wishlist");
+      }
     } catch (err) { 
       console.error("찜 토글 실패:", err); 
+      alert("처리 중 오류가 발생했습니다.");
     }
   };
+
 
   // ── 삭제 → DELETE /api/cart/:cid
   const handleDelete = async (cid) => {
@@ -135,6 +167,7 @@ export default function Cart() {
   const totalPrice  = checkedItems.reduce((sum, item) => sum + item.ogprice * item.count, 0);
   const deliveryFee = getDeliveryFee(totalPrice);
   const allPrice    = totalPrice + deliveryFee;
+  
 
   if (loading) return <div className="loading">로딩 중...</div>;
 
