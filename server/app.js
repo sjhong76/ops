@@ -9,6 +9,7 @@ import cartRouter     from './routes/cart.js';
 import reviewRouter   from './routes/review.js';
 import wishlistRouter from './routes/wishlist.js';
 import kakaoRouter    from './routes/kakao.js';
+import communityRouter from  './routes/community.js'
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use('/api/cart',     cartRouter);
 app.use('/api/reviews',  reviewRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/kakao',    kakaoRouter);
+app.use('/api/community',    communityRouter);
 
 // ── 서버 시작
 app.listen(PORT, '0.0.0.0', () => {
