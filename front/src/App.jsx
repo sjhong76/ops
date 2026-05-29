@@ -6,26 +6,34 @@ import axios from "axios";
 
 import { setUser, logout, setCartCount, setWishCount } from "./store";
 
-import Header   from "./components/Header";
-import Footer   from "./components/Footer";
-import Home     from "./pages/Home";
-import About    from "./pages/About";
-import Member   from "./pages/Member";
-import Login    from "./pages/Login";
-import Join     from "./pages/Join";
-import ShopList from "./pages/ShopList";
-import Detail   from "./pages/Detail";
-import Cart     from "./pages/Cart";
-import Wishlist from "./pages/Wishlist";
-import Order    from "./pages/Order";
+import Header    from "./components/Header";
+import Footer    from "./components/Footer";
+import Home      from "./pages/Home";
+import About     from "./pages/About";
+import Member    from "./pages/Member";
+import Login     from "./pages/Login";
+import Join      from "./pages/Join";
+import ShopList  from "./pages/ShopList";
+import Detail    from "./pages/Detail";
+import Cart      from "./pages/Cart";
+import Wishlist  from "./pages/Wishlist";
+import Order     from "./pages/Order";
 import PayResult from "./pages/PayResult";
 import Community from "./pages/Community";
-import Admin from "./pages/Admin";
+import Admin     from "./pages/Admin";
 
-
+/* ── 로그인 필요 */
 const PrivateRoute = ({ children }) => {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   return isLoggedIn ? children : <Navigate to="/Login" replace />;
+};
+
+/* ── 관리자 전용 */
+const AdminRoute = ({ children }) => {
+  const { isLoggedIn, role } = useSelector((state) => state.user);
+  if (!isLoggedIn)      return <Navigate to="/Login" replace />;
+  if (role !== "admin") return <Navigate to="/"      replace />;
+  return children;
 };
 
 function App() {
@@ -49,9 +57,9 @@ function App() {
             uid:         res.data.uid,
             userId:      res.data.userId,
             accessToken: res.data.accessToken,
+            role:        res.data.role,   // ✅ role 복구
           }));
 
-          // 장바구니 + 관심상품 카운트 동시 복구
           try {
             const [cartRes, wishRes] = await Promise.all([
               fetch(`/api/cart/${res.data.uid}`),
@@ -101,14 +109,14 @@ function App() {
         <Route path="/shop/chocolate" element={<ShopList prdlist={prdlist} category="초콜렛" />} />
         <Route path="/shop/gift"      element={<ShopList prdlist={prdlist} category="선물세트" />} />
         <Route path="/shop/cake"      element={<ShopList prdlist={prdlist} category="케이크" />} />
-        <Route path="/community"  element={<Community prdlist={prdlist} category="community"/>} />
-        <Route path="/community/notice"  element={<Community prdlist={prdlist} category="notice" />} />
-        <Route path="/community/magazine"  element={<Community prdlist={prdlist} category="magazine" />} />
-        <Route path="/community/q&a"  element={<Community prdlist={prdlist} category="q&a" />} />
-        <Route path="/community/guide"  element={<Community prdlist={prdlist} category="guide" />} />
-        <Route path="/community/rvip"  element={<Community prdlist={prdlist} category="rvip" />} />
-        <Route path="/community/faq"  element={<Community prdlist={prdlist} category="faq" />} />
-        <Route path="/community/event"  element={<Community prdlist={prdlist} category="event" />} />
+        <Route path="/community"              element={<Community prdlist={prdlist} category="community" />} />
+        <Route path="/community/notice"       element={<Community prdlist={prdlist} category="notice" />} />
+        <Route path="/community/magazine"     element={<Community prdlist={prdlist} category="magazine" />} />
+        <Route path="/community/q&a"          element={<Community prdlist={prdlist} category="q&a" />} />
+        <Route path="/community/guide"        element={<Community prdlist={prdlist} category="guide" />} />
+        <Route path="/community/rvip"         element={<Community prdlist={prdlist} category="rvip" />} />
+        <Route path="/community/faq"          element={<Community prdlist={prdlist} category="faq" />} />
+        <Route path="/community/event"        element={<Community prdlist={prdlist} category="event" />} />
         <Route path="/detail/:id"     element={<Detail prdlist={prdlist} />} />
         <Route path="/cart"      element={<PrivateRoute><Cart /></PrivateRoute>} />
         <Route path="/wishlist"  element={<PrivateRoute><Wishlist /></PrivateRoute>} />
@@ -118,7 +126,7 @@ function App() {
         <Route path="/Member"    element={<Member />} />
         <Route path="/Login"     element={<Login />} />
         <Route path="/Join"      element={<Join />} />
-        <Route path="/admin"     element={<Admin />} />
+        <Route path="/admin"     element={<AdminRoute><Admin /></AdminRoute>} />  {/* ✅ 관리자 전용 */}
       </Routes>
       <Footer />
       <div

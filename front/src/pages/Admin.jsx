@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { formatPrice } from "../utils/cart";
 
 const TABS = ["회원 관리", "상품 관리", "주문 내역"];
@@ -9,18 +10,29 @@ const initProduct = {
 };
 
 export default function Admin() {
-  const navigate = useNavigate();
+  const navigate     = useNavigate();
+  const accessToken  = useSelector((state) => state.user.accessToken);  // ✅ 토큰 가져오기
+
   const [tab,      setTab]      = useState(0);
   const [users,    setUsers]    = useState([]);
   const [products, setProducts] = useState([]);
   const [orders,   setOrders]   = useState([]);
   const [loading,  setLoading]  = useState(false);
 
-  // 상품 등록/수정 폼
-  const [form,     setForm]     = useState(initProduct);
-  const [editPid,  setEditPid]  = useState(null); // null이면 등록, 값 있으면 수정
+  const [form,    setForm]    = useState(initProduct);
+  const [editPid, setEditPid] = useState(null);
 
-  /* ── 탭 변경 시 데이터 fetch */
+  // ✅ 인증 헤더 포함한 fetch 헬퍼
+  const authFetch = (url, options = {}) =>
+    fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        ...options.headers,
+      },
+    });
+
   useEffect(() => {
     if (tab === 0) fetchUsers();
     if (tab === 1) fetchProducts();
@@ -29,44 +41,43 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/users");
-    setUsers(await res.json());
+    const res  = await authFetch("/api/admin/users");
+    const data = await res.json();
+    setUsers(Array.isArray(data) ? data : []);
     setLoading(false);
   };
 
   const fetchProducts = async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/products");
-    setProducts(await res.json());
+    const res  = await authFetch("/api/admin/products");
+    const data = await res.json();
+    setProducts(Array.isArray(data) ? data : []);
     setLoading(false);
   };
 
   const fetchOrders = async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/orders");
-    setOrders(await res.json());
+    const res  = await authFetch("/api/admin/orders");
+    const data = await res.json();
+    setOrders(Array.isArray(data) ? data : []);
     setLoading(false);
   };
 
-  /* ── 회원 삭제 */
   const handleDeleteUser = async (uid, name) => {
     if (!window.confirm(`"${name}" 회원을 삭제하시겠습니까?`)) return;
-    await fetch(`/api/admin/users/${uid}`, { method: "DELETE" });
+    await authFetch(`/api/admin/users/${uid}`, { method: "DELETE" });
     fetchUsers();
   };
 
-  /* ── 상품 폼 변경 */
   const handleFormChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  /* ── 상품 등록/수정 제출 */
   const handleProductSubmit = async () => {
-    const method  = editPid ? "PUT" : "POST";
-    const url     = editPid ? `/api/admin/products/${editPid}` : "/api/admin/products";
-    await fetch(url, {
+    const method = editPid ? "PUT" : "POST";
+    const url    = editPid ? `/api/admin/products/${editPid}` : "/api/admin/products";
+    await authFetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, price: Number(form.price) }),
     });
     setForm(initProduct);
@@ -74,7 +85,6 @@ export default function Admin() {
     fetchProducts();
   };
 
-  /* ── 상품 수정 버튼 */
   const handleEditProduct = (p) => {
     setForm({
       name: p.name, price: p.price, category: p.category,
@@ -84,10 +94,9 @@ export default function Admin() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  /* ── 상품 삭제 */
   const handleDeleteProduct = async (pid, name) => {
     if (!window.confirm(`"${name}" 상품을 삭제하시겠습니까?`)) return;
-    await fetch(`/api/admin/products/${pid}`, { method: "DELETE" });
+    await authFetch(`/api/admin/products/${pid}`, { method: "DELETE" });
     fetchProducts();
   };
 
@@ -98,7 +107,6 @@ export default function Admin() {
           <h2>관리자 페이지</h2>
         </div>
 
-        {/* 탭 */}
         <div className="admin-tabs">
           {TABS.map((t, i) => (
             <button
@@ -120,13 +128,8 @@ export default function Admin() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>UID</th>
-                  <th>아이디</th>
-                  <th>이름</th>
-                  <th>전화번호</th>
-                  <th>이메일</th>
-                  <th>가입일</th>
-                  <th>관리</th>
+                  <th>UID</th><th>아이디</th><th>이름</th><th>전화번호</th>
+                  <th>이메일</th><th>권한</th><th>가입일</th><th>관리</th>
                 </tr>
               </thead>
               <tbody>
@@ -137,14 +140,10 @@ export default function Admin() {
                     <td>{u.name}</td>
                     <td>{u.phone}</td>
                     <td>{u.email || "-"}</td>
+                    <td>{u.role === "admin" ? "🔑 관리자" : "일반"}</td>
                     <td>{new Date(u.created_at).toLocaleDateString("ko-KR")}</td>
                     <td>
-                      <button
-                        className="admin-btn-delete"
-                        onClick={() => handleDeleteUser(u.uid, u.name)}
-                      >
-                        삭제
-                      </button>
+                      <button className="admin-btn-delete" onClick={() => handleDeleteUser(u.uid, u.name)}>삭제</button>
                     </td>
                   </tr>
                 ))}
@@ -156,10 +155,7 @@ export default function Admin() {
         {/* ── 상품 관리 */}
         {tab === 1 && !loading && (
           <div className="admin-section">
-            {/* 등록/수정 폼 */}
-            <h3 className="admin-section-title">
-              {editPid ? "상품 수정" : "상품 등록"}
-            </h3>
+            <h3 className="admin-section-title">{editPid ? "상품 수정" : "상품 등록"}</h3>
             <div className="admin-form">
               <div className="admin-form-grid">
                 <input name="name"     value={form.name}     onChange={handleFormChange} placeholder="상품명" />
@@ -182,20 +178,14 @@ export default function Admin() {
               </div>
             </div>
 
-            {/* 상품 목록 */}
             <h3 className="admin-section-title" style={{ marginTop: "40px" }}>
               상품 목록 ({products.length}개)
             </h3>
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>PID</th>
-                  <th>상품명</th>
-                  <th>가격</th>
-                  <th>카테고리</th>
-                  <th>유통기한</th>
-                  <th>보관방법</th>
-                  <th>관리</th>
+                  <th>PID</th><th>상품명</th><th>가격</th><th>카테고리</th>
+                  <th>유통기한</th><th>보관방법</th><th>관리</th>
                 </tr>
               </thead>
               <tbody>
@@ -225,14 +215,8 @@ export default function Admin() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>번호</th>
-                  <th>아이디</th>
-                  <th>이름</th>
-                  <th>전화번호</th>
-                  <th>상품명</th>
-                  <th>단가</th>
-                  <th>수량</th>
-                  <th>합계</th>
+                  <th>번호</th><th>아이디</th><th>이름</th><th>전화번호</th>
+                  <th>상품명</th><th>단가</th><th>수량</th><th>합계</th>
                 </tr>
               </thead>
               <tbody>
