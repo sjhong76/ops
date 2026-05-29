@@ -9,6 +9,7 @@ export default function Join() {
   const [step,   setStep]   = useState(1);
   const [form,   setForm]   = useState(initForm(FIELDS));
   const [errors, setErrors] = useState(initForm(FIELDS));
+  const [agrees, setAgrees] = useState({ terms: false, privacy: false, marketing: false });
 
   const handleChangeForm = (e) => {
     const { name, value } = e.target;
@@ -29,11 +30,14 @@ export default function Join() {
     alert(`"${form.id}" 사용 가능한 아이디입니다.`);
   };
 
-  // ── 서버 회원가입 API 연동
+  const handleAgreeAll = (e) => {
+    const checked = e.target.checked;
+    setAgrees({ terms: checked, privacy: checked, marketing: checked });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 클라이언트 validation
     if (!form.id)              { setErrors((p) => ({ ...p, id:   "아이디를 입력해주세요" }));          return; }
     if (!form.pwd)             { setErrors((p) => ({ ...p, pwd:  "비밀번호를 입력해주세요" }));         return; }
     if (form.pwd !== form.cpwd){ setErrors((p) => ({ ...p, cpwd: "비밀번호가 일치하지 않습니다" }));    return; }
@@ -55,12 +59,10 @@ export default function Join() {
       const data = await res.json();
 
       if (!res.ok) {
-        // 409: 아이디 중복 등
         setErrors((p) => ({ ...p, id: data.message || "회원가입에 실패했습니다." }));
         return;
       }
 
-      // 가입 완료 → Step 3
       setStep(3);
     } catch (err) {
       console.error("회원가입 오류:", err);
@@ -85,27 +87,76 @@ export default function Join() {
         {/* ── Step 1 : 약관 동의 ── */}
         {step === 1 && (
           <div className="join-box">
-            <h3>전체 동의</h3>
-            <label className="join-check">
-              <input type="checkbox" /> 이용약관 동의 <span>(필수)</span>
+
+            {/* 전체 동의 */}
+            <h3>
+              <label className="join-check" style={{ cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  className="hidden-check"
+                  checked={agrees.terms && agrees.privacy && agrees.marketing}
+                  onChange={handleAgreeAll}
+                />
+                <span className="check-mark" />
+                전체 동의
+              </label>
+            </h3>
+
+            <label className="join-check" style={{ cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                className="hidden-check"
+                checked={agrees.terms}
+                onChange={(e) => setAgrees({ ...agrees, terms: e.target.checked })}
+              />
+              <span className="check-mark" />
+              이용약관 동의 <span>(필수)</span>
             </label>
             <div className="join-terms">
               제1조 목적<br />
               이 약관은 OPS 온라인몰 서비스 이용과 관련하여 회사와 이용자의
               권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
             </div>
-            <label className="join-check">
-              <input type="checkbox" /> 개인정보처리방침 동의 <span>(필수)</span>
+
+            <label className="join-check" style={{ cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                className="hidden-check"
+                checked={agrees.privacy}
+                onChange={(e) => setAgrees({ ...agrees, privacy: e.target.checked })}
+              />
+              <span className="check-mark" />
+              개인정보처리방침 동의 <span>(필수)</span>
             </label>
             <div className="join-terms">
               개인정보 수집 및 이용 목적<br />
               회원가입, 주문, 배송, 고객상담, 서비스 제공을 위해 개인정보를 수집합니다.
             </div>
-            <label className="join-check">
-              <input type="checkbox" /> 쇼핑정보 수신 동의 <span>(선택)</span>
+
+            <label className="join-check" style={{ cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                className="hidden-check"
+                checked={agrees.marketing}
+                onChange={(e) => setAgrees({ ...agrees, marketing: e.target.checked })}
+              />
+              <span className="check-mark" />
+              쇼핑정보 수신 동의 <span>(선택)</span>
             </label>
+
             <div className="join-btns">
-              <button onClick={() => setStep(2)} className="join-main-btn">다음</button>
+              <button
+                onClick={() => {
+                  if (!agrees.terms || !agrees.privacy) {
+                    alert("필수 약관에 동의해주세요.");
+                    return;
+                  }
+                  setStep(2);
+                }}
+                className="join-main-btn"
+              >
+                다음
+              </button>
               <button onClick={() => navigate("/")} className="join-sub-btn">취소</button>
             </div>
           </div>
