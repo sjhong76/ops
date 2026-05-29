@@ -20,6 +20,8 @@ import Wishlist from "./pages/Wishlist";
 import Order    from "./pages/Order";
 import PayResult from "./pages/PayResult";
 import Community from "./pages/Community";
+import Admin from "./pages/Admin";
+
 
 const PrivateRoute = ({ children }) => {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
@@ -116,6 +118,7 @@ function App() {
         <Route path="/Member"    element={<Member />} />
         <Route path="/Login"     element={<Login />} />
         <Route path="/Join"      element={<Join />} />
+        <Route path="/admin"     element={<Admin />} />
       </Routes>
       <Footer />
       <div
