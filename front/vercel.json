@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://opsrailwaydeploy-ops.up.railway.app/api/:path*"
+    }
+  ]
+}
