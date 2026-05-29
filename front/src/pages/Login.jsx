@@ -43,6 +43,7 @@ export default function Login() {
         uid:         data.uid,
         userId:      data.userId,
         accessToken: data.accessToken,
+        role:        data.role,   // ✅ role 추가
       }));
 
       // ── 로그인 즉시 장바구니 + 관심상품 카운트 fetch

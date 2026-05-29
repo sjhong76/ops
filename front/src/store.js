@@ -1,10 +1,5 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 
-/* ────────────────────────────────────────
-   user slice
-   - authChecked: false → refresh 완료 전까지 렌더링 보류 (Shoppy 패턴)
-   - AccessToken은 메모리(Redux)에만 저장 (localStorage 제거)
-──────────────────────────────────────── */
 let user = createSlice({
   name: "user",
   initialState: {
@@ -12,7 +7,8 @@ let user = createSlice({
     userId:       "",
     accessToken:  "",
     isLoggedIn:   false,
-    authChecked:  false,   // ← 새로고침 시 깜빡임 방지
+    authChecked:  false,
+    role:         "",      // ✅ role 추가
     wishCount:    0,
     cartCount:    0,
   },
@@ -21,6 +17,7 @@ let user = createSlice({
       state.uid         = action.payload.uid;
       state.userId      = action.payload.userId;
       state.accessToken = action.payload.accessToken;
+      state.role        = action.payload.role || "";  // ✅ role 저장
       state.isLoggedIn  = true;
       state.authChecked = true;
       state.cartCount   = 0;
@@ -35,6 +32,7 @@ let user = createSlice({
       state.uid         = null;
       state.userId      = "";
       state.accessToken = "";
+      state.role        = "";  // ✅ role 초기화
       state.isLoggedIn  = false;
       state.authChecked = true;
       state.wishCount   = 0;
@@ -45,9 +43,6 @@ let user = createSlice({
 
 export let { setUser, logout, setWishCount, setCartCount } = user.actions;
 
-/* ────────────────────────────────────────
-   cart slice
-──────────────────────────────────────── */
 let cart = createSlice({
   name: "cart",
   initialState: [],

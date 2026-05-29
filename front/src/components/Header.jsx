@@ -6,36 +6,33 @@ import { axiosPost } from "../utils/dataFetch";
 import { Link } from "react-router-dom";
 
 const SHOP_MENUS = [
-  { label: "빵",     path: "/shop/bread" },
-  { label: "쿠키",   path: "/shop/cookie" },
-  { label: "초콜렛", path: "/shop/chocolate" },
+  { label: "빵",      path: "/shop/bread" },
+  { label: "쿠키",    path: "/shop/cookie" },
+  { label: "초콜렛",  path: "/shop/chocolate" },
   { label: "선물세트", path: "/shop/gift" },
-  { label: "케이크", path: "/shop/cake" },
+  { label: "케이크",  path: "/shop/cake" },
 ];
 
 const COMMUNITY_MENUS = [
-  // "NOTICE", "OPS MAGAZINE", "Q&A", "매장안내", "RVIP 전용", "FAQ", "EVENT",
-  { label: "NOTICE",    path:"/community/notice"},
-  { label: "OPS MAGAZINE",    path:"/community/magazine"},
-  { label: "Q&A",    path:"/community/q&a"},
-  { label: "매장안내",    path:"/community/guide"},
-  { label: "RVIP 전용",    path:"/community/rvip"},
-  { label: "FAQ",    path:"/community/faq"},
-  { label: "EVENT",    path:"/community/event"}
+  { label: "NOTICE",      path: "/community/notice" },
+  { label: "OPS MAGAZINE", path: "/community/magazine" },
+  { label: "Q&A",         path: "/community/q&a" },
+  { label: "매장안내",     path: "/community/guide" },
+  { label: "RVIP 전용",   path: "/community/rvip" },
+  { label: "FAQ",         path: "/community/faq" },
+  { label: "EVENT",       path: "/community/event" },
 ];
 
 export default function Header() {
-  const navigate    = useNavigate();
-  const dispatch    = useDispatch();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [sswitch, setSswitch] = useState(false);
 
-
-  // ── Redux에서 로그인 상태 읽기
-  const { isLoggedIn, userId, wishCount, cartCount } = useSelector((state) => state.user);
+  const { isLoggedIn, userId, wishCount, cartCount, role } = useSelector((state) => state.user);
 
   const handleLogout = async () => {
     try {
-      await axiosPost("/auth/logout");  // 서버 쿠키 삭제
+      await axiosPost("/auth/logout");
     } catch (err) {
       console.error("로그아웃 오류:", err);
     }
@@ -51,6 +48,15 @@ export default function Header() {
           {/* ── 왼쪽 네비 ── */}
           <nav>
             <ul className="flex">
+              {/* ✅ 관리자 메뉴 */}
+              {isLoggedIn && role === "admin" && (
+                <li className="categoryitem">
+                  <a className="categorylink" onClick={() => navigate("/admin")}
+                    style={{ color: "#b17a52", fontWeight: "bold" }}>
+                    관리자
+                  </a>
+                </li>
+              )}
               <li className="categoryitem">
                 <a className="categorylink" onClick={() => navigate("/About")}>ABOUT US</a>
               </li>
@@ -67,11 +73,10 @@ export default function Header() {
                 </div>
               </li>
               <li className="categoryitem">
-                {/* <a className="categorylink" onClick={() => alert("준비중입니다.")}>COMMUNITY</a> */}
                 <a className="categorylink" onClick={() => navigate("/community")}>COMMUNITY</a>
                 <div className="subcategory">
                   <ul className="subcategorylist">
-                    {COMMUNITY_MENUS.map(({label, path}) => (
+                    {COMMUNITY_MENUS.map(({ label, path }) => (
                       <li key={label} className="subcategoryitem">
                         <Link to={path} className="subcategorylink">{label}</Link>
                       </li>
@@ -94,8 +99,6 @@ export default function Header() {
 
           {/* ── 오른쪽 유저 메뉴 ── */}
           <div className="rightmenu flex flexvcenter">
-
-            {/* 로그인 상태에 따라 다르게 표시 */}
             {isLoggedIn ? (
               <div>
                 <span className="usermenulink">{userId}</span>

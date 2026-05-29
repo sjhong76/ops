@@ -1,7 +1,11 @@
 import express from 'express';
 import pool from '../db/connection.js';
+import { verifyAdmin } from '../controller/auth.js';
 
 const router = express.Router();
+
+// ✅ 모든 admin 라우트에 verifyAdmin 미들웨어 적용
+router.use(verifyAdmin);
 
 /* ────────────────────────────────────────
    회원 목록 조회
@@ -9,7 +13,7 @@ const router = express.Router();
 router.get('/users', async (req, res) => {
     try {
         const [rows] = await pool.execute(
-            'SELECT uid, id, name, phone, email, created_at FROM user ORDER BY created_at DESC'
+            'SELECT uid, id, name, phone, email, role, created_at FROM user ORDER BY created_at DESC'
         );
         res.json(rows);
     } catch (err) {

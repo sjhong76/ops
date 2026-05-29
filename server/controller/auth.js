@@ -36,7 +36,6 @@ export const join = async (req, res, next) => {
 
 /* ────────────────────────────────────────
    로그인 — AccessToken + RefreshToken 발급
-   (Shoppy 패턴 적용)
 ──────────────────────────────────────── */
 export const login = async (req, res, next) => {
     try {
@@ -56,29 +55,25 @@ export const login = async (req, res, next) => {
             return res.status(401).json({ message: '아이디 또는 비밀번호가 올바르지 않습니다.' });
         }
 
-        const payload = { uid: user.uid, id: user.id, role: 'ROLE_USER' };
+        // ✅ DB에서 읽은 실제 role 사용
+        const payload = { uid: user.uid, id: user.id, role: user.role };
 
-        // (1) AccessToken 발급 (짧은 만료)
-        const accessToken = jwt.sign(payload, ACCESS_SECRET(), { expiresIn: ACCESS_EXPIRES });
-
-        // (2) RefreshToken 발급 (긴 만료)
+        const accessToken  = jwt.sign(payload, ACCESS_SECRET(),  { expiresIn: ACCESS_EXPIRES });
         const refreshToken = jwt.sign(payload, REFRESH_SECRET(), { expiresIn: REFRESH_EXPIRES });
 
-        // (3) RefreshToken → HttpOnly 쿠키로 전달
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure:   false,   // 개발환경
-            sameSite: 'lax',   // 개발환경
-            maxAge:   7 * 24 * 60 * 60 * 1000,  // 7일
+            secure:   false,
+            sameSite: 'lax',
+            maxAge:   7 * 24 * 60 * 60 * 1000,
         });
 
-        // (4) AccessToken만 JSON 응답
         res.json({
             message:     '로그인 성공',
             accessToken,
             uid:         user.uid,
             userId:      user.id,
-            role:        'ROLE_USER',
+            role:        user.role,  // ✅ 실제 role 반환
         });
     } catch (err) {
         next(err);
@@ -86,7 +81,7 @@ export const login = async (req, res, next) => {
 };
 
 /* ────────────────────────────────────────
-   AccessToken 재발급 (RefreshToken 검증)
+   AccessToken 재발급
 ──────────────────────────────────────── */
 export const refresh = async (req, res, next) => {
     const refreshToken = req.cookies?.refreshToken;
@@ -97,7 +92,7 @@ export const refresh = async (req, res, next) => {
     }
 
     try {
-        const decoded    = jwt.verify(refreshToken, REFRESH_SECRET());
+        const decoded     = jwt.verify(refreshToken, REFRESH_SECRET());
         const accessToken = jwt.sign(
             { uid: decoded.uid, id: decoded.id, role: decoded.role },
             ACCESS_SECRET(),
@@ -110,7 +105,7 @@ export const refresh = async (req, res, next) => {
             accessToken,
             uid:    decoded.uid,
             userId: decoded.id,
-            role:   decoded.role,
+            role:   decoded.role,  // ✅ role 포함
         });
     } catch (err) {
         console.error('❌ [refresh] 토큰 검증 실패:', err.message);
@@ -120,7 +115,7 @@ export const refresh = async (req, res, next) => {
 };
 
 /* ────────────────────────────────────────
-   verifyToken 미들웨어 — API 요청 인증
+   verifyToken 미들웨어
 ──────────────────────────────────────── */
 export const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -140,7 +135,29 @@ export const verifyToken = (req, res, next) => {
 };
 
 /* ────────────────────────────────────────
-   로그아웃 — 쿠키 삭제
+   verifyAdmin 미들웨어 — 관리자 전용
+──────────────────────────────────────── */
+export const verifyAdmin = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ message: '토큰 없음' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    try {
+        const decoded = jwt.verify(token, ACCESS_SECRET());
+        if (decoded.role !== 'admin') {
+            return res.status(403).json({ message: '관리자 권한이 없습니다.' });
+        }
+        req.user = decoded;
+        next();
+    } catch (err) {
+        return res.status(401).json({ message: '토큰 만료 또는 유효하지 않음' });
+    }
+};
+
+/* ────────────────────────────────────────
+   로그아웃
 ──────────────────────────────────────── */
 export const logout = (req, res) => {
     res.clearCookie('refreshToken', {
