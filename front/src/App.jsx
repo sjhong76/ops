@@ -19,6 +19,7 @@ import Cart     from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
 import Order    from "./pages/Order";
 import PayResult from "./pages/PayResult";
+import Community from "./pages/Community";
 
 const PrivateRoute = ({ children }) => {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
@@ -98,6 +99,14 @@ function App() {
         <Route path="/shop/chocolate" element={<ShopList prdlist={prdlist} category="초콜렛" />} />
         <Route path="/shop/gift"      element={<ShopList prdlist={prdlist} category="선물세트" />} />
         <Route path="/shop/cake"      element={<ShopList prdlist={prdlist} category="케이크" />} />
+        <Route path="/community"  element={<Community prdlist={prdlist} category="community"/>} />
+        <Route path="/community/notice"  element={<Community prdlist={prdlist} category="notice" />} />
+        <Route path="/community/magazine"  element={<Community prdlist={prdlist} category="magazine" />} />
+        <Route path="/community/q&a"  element={<Community prdlist={prdlist} category="q&a" />} />
+        <Route path="/community/guide"  element={<Community prdlist={prdlist} category="guide" />} />
+        <Route path="/community/rvip"  element={<Community prdlist={prdlist} category="rvip" />} />
+        <Route path="/community/faq"  element={<Community prdlist={prdlist} category="faq" />} />
+        <Route path="/community/event"  element={<Community prdlist={prdlist} category="event" />} />
         <Route path="/detail/:id"     element={<Detail prdlist={prdlist} />} />
         <Route path="/cart"      element={<PrivateRoute><Cart /></PrivateRoute>} />
         <Route path="/wishlist"  element={<PrivateRoute><Wishlist /></PrivateRoute>} />

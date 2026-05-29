@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store";
 import { axiosPost } from "../utils/dataFetch";
+import { Link } from "react-router-dom";
 
 const SHOP_MENUS = [
   { label: "빵",     path: "/shop/bread" },
@@ -13,13 +14,21 @@ const SHOP_MENUS = [
 ];
 
 const COMMUNITY_MENUS = [
-  "NOTICE", "OPS MAGAZINE", "Q&A", "매장안내", "RVIP 전용", "FAQ", "EVENT",
+  // "NOTICE", "OPS MAGAZINE", "Q&A", "매장안내", "RVIP 전용", "FAQ", "EVENT",
+  { label: "NOTICE",    path:"/community/notice"},
+  { label: "OPS MAGAZINE",    path:"/community/magazine"},
+  { label: "Q&A",    path:"/community/q&a"},
+  { label: "매장안내",    path:"/community/guide"},
+  { label: "RVIP 전용",    path:"/community/rvip"},
+  { label: "FAQ",    path:"/community/faq"},
+  { label: "EVENT",    path:"/community/event"}
 ];
 
 export default function Header() {
   const navigate    = useNavigate();
   const dispatch    = useDispatch();
   const [sswitch, setSswitch] = useState(false);
+
 
   // ── Redux에서 로그인 상태 읽기
   const { isLoggedIn, userId, wishCount, cartCount } = useSelector((state) => state.user);
@@ -46,7 +55,7 @@ export default function Header() {
                 <a className="categorylink" onClick={() => navigate("/About")}>ABOUT US</a>
               </li>
               <li className="categoryitem">
-                <a className="categorylink" onClick={() => navigate("/shop/bread")}>SHOP</a>
+                <a className="categorylink" onClick={() => navigate("/shop")}>SHOP</a>
                 <div className="subcategory">
                   <ul className="subcategorylist">
                     {SHOP_MENUS.map(({ label, path }) => (
@@ -58,12 +67,13 @@ export default function Header() {
                 </div>
               </li>
               <li className="categoryitem">
-                <a className="categorylink" onClick={() => alert("준비중입니다.")}>COMMUNITY</a>
+                {/* <a className="categorylink" onClick={() => alert("준비중입니다.")}>COMMUNITY</a> */}
+                <a className="categorylink" onClick={() => navigate("/community")}>COMMUNITY</a>
                 <div className="subcategory">
                   <ul className="subcategorylist">
-                    {COMMUNITY_MENUS.map((label) => (
+                    {COMMUNITY_MENUS.map(({label, path}) => (
                       <li key={label} className="subcategoryitem">
-                        <a className="subcategorylink" onClick={() => alert("준비중입니다.")}>{label}</a>
+                        <Link to={path} className="subcategorylink">{label}</Link>
                       </li>
                     ))}
                   </ul>

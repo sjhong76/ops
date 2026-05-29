@@ -99,18 +99,38 @@ strong {
 
 
 
+.community-portal-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 20px;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  text-align: center;
+}
 
-
-
-
-
-
-
-
-
-
-
-
+.community-portal-card-first {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #fafafa;
+  border: 1px solid #eaeaea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  font-size: 18px;
+  color: #555;
+}
 
 /* 헤더 */
 .header {
