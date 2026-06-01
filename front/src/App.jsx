@@ -21,6 +21,7 @@ import Order     from "./pages/Order";
 import PayResult from "./pages/PayResult";
 import Community from "./pages/Community";
 import Admin     from "./pages/Admin";
+import Magazine from "./pages/Magazine";
 
 /* ── 로그인 필요 */
 const PrivateRoute = ({ children }) => {
@@ -111,7 +112,7 @@ function App() {
         <Route path="/shop/cake"      element={<ShopList prdlist={prdlist} category="케이크" />} />
         <Route path="/community"              element={<Community prdlist={prdlist} category="community" />} />
         <Route path="/community/notice"       element={<Community prdlist={prdlist} category="notice" />} />
-        <Route path="/community/magazine"     element={<Community prdlist={prdlist} category="magazine" />} />
+        <Route path="/community/magazine"     element={<Magazine />} />
         <Route path="/community/q&a"          element={<Community prdlist={prdlist} category="q&a" />} />
         <Route path="/community/guide"        element={<Community prdlist={prdlist} category="guide" />} />
         <Route path="/community/rvip"         element={<Community prdlist={prdlist} category="rvip" />} />
@@ -127,6 +128,7 @@ function App() {
         <Route path="/Login"     element={<Login />} />
         <Route path="/Join"      element={<Join />} />
         <Route path="/admin"     element={<AdminRoute><Admin /></AdminRoute>} />  {/* ✅ 관리자 전용 */}
+
       </Routes>
       <Footer />
       <div

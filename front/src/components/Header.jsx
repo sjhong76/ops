@@ -14,13 +14,12 @@ const SHOP_MENUS = [
 ];
 
 const COMMUNITY_MENUS = [
-  { label: "NOTICE",      path: "/community/notice" },
-  { label: "OPS MAGAZINE", path: "/community/magazine" },
-  { label: "Q&A",         path: "/community/q&a" },
-  { label: "매장안내",     path: "/community/guide" },
-  { label: "RVIP 전용",   path: "/community/rvip" },
-  { label: "FAQ",         path: "/community/faq" },
-  { label: "EVENT",       path: "/community/event" },
+  { label: "NOTICE",       path: "/community/notice",   internal: true },
+  { label: "OPS MAGAZINE", path: "/community/magazine", internal: true },
+  { label: "Q&A",          path: "/community/q&a",      internal: true },
+  { label: "매장안내",      path: "/community/guide",   internal: true },
+  { label: "FAQ",          path: "/community/faq",      internal: true },
+  { label: "EVENT",        path: "/community/event",    internal: true },
 ];
 
 export default function Header() {
@@ -73,12 +72,18 @@ export default function Header() {
                 </div>
               </li>
               <li className="categoryitem">
-                <a className="categorylink" onClick={() => navigate("/community")}>COMMUNITY</a>
+                <a className="categorylink" onClick={() => navigate("/community/notice")}>COMMUNITY</a>
                 <div className="subcategory">
                   <ul className="subcategorylist">
-                    {COMMUNITY_MENUS.map(({ label, path }) => (
+                    {COMMUNITY_MENUS.map(({ label, path, internal, external }) => (
                       <li key={label} className="subcategoryitem">
-                        <Link to={path} className="subcategorylink">{label}</Link>
+                        {external ? (
+                          <a className="subcategorylink" href={path} target="_blank" rel="noopener noreferrer">{label}</a>
+                        ) : internal ? (
+                          <a className="subcategorylink" onClick={() => navigate(path)}>{label}</a>
+                        ) : (
+                          <a className="subcategorylink" onClick={() => alert("준비중입니다.")}>{label}</a>
+                        )}
                       </li>
                     ))}
                   </ul>
