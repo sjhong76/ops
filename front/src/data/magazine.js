@@ -1,4 +1,4 @@
-const MAGAZINE_LIST = [
+export const MAGAZINE_LIST = [
   {
     id: 1,
     img: "https://ops007.cafe24.com/web/upload/magazine/chatis_example/2024social_contribution.jpg",

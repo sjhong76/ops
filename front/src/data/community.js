@@ -1,4 +1,4 @@
-const COMMUNITY_MENUS = [
+export const COMMUNITY_MENUS = [
   { label: "NOTICE",       path: "/community/notice",   catKey: "notice" },
   { label: "OPS MAGAZINE", path: "/community/magazine", catKey: "magazine" },
   { label: "Q&A",          path: "/community/q&a",      catKey: "q&a" },
@@ -7,7 +7,7 @@ const COMMUNITY_MENUS = [
   { label: "EVENT",        path: "/community/event",    catKey: "event" }
 ];
 
-const STORE_LIST = [
+export const STORE_LIST = [
   { id: 1,  name: "W 옵스 드마히니",   addr: "부산 남구 분포로 145 스퀘어동 2층 2022호",         tel: "051.621.8118", hours: "10:00 - 22:00", holiday: "명절 휴무", img: "https://m.ops.co.kr/file_data/ops007/gallery/2021/03/26/cf815203c79ab8daf820d7b57f0e784d.jpg" },
   { id: 2,  name: "타임빌라스 수원점", addr: "경기도 수원시 권선구 세화로 134 타임빌라스 수원점 2층", tel: "031.8066.1790", hours: "10:30 - 22:00", holiday: "연중무휴",  img: "https://m.ops.co.kr/file_data/ops007/gallery/2020/04/07/01551daa7fc3c07cb0bdc239f7c0c56f.jpg" },
   { id: 3,  name: "인천 롯데점",       addr: "인천 미추홀구 연남로 35 롯데백화점 인천터미널점 지하1층", tel: "032.242.2037", hours: "평일 10:30-20:00 | 금,토,일 10:30-20:30", holiday: "명절·백화점 휴무일", img: "https://m.ops.co.kr/file_data/ops007/gallery/2020/04/01/4a2976a54cdff97f7a06a2ee750a013f.JPG" },
@@ -24,7 +24,7 @@ const STORE_LIST = [
   { id: 14, name: "남천점",            addr: "부산 수영구 황령대로489번길 37",                      tel: "051.625.4300", hours: "08:00 - 22:00", holiday: "명절 휴무", img: "https://m.ops.co.kr/file_data/ops007/gallery/2021/03/26/a7f5ac76a5be6d35cf4c17b725baa11c.jpg" },
 ];
 
-const FAQ_LIST = [
+export const FAQ_LIST = [
   {
     category: "쿠폰/적립금",
     items: [
@@ -53,7 +53,7 @@ const FAQ_LIST = [
   },
 ];
 
-const EVENT_LIST = [
+export const EVENT_LIST = [
   { id: 1,  title: "2026 병오년 이벤트",              date: "2025-12-31", status: "진행중",   img: "https://m.ops.co.kr/file_data/ops007/gallery/2025/12/31/7a02b699999b9ec9aa817cd79dd8e8d2.jpg", url: "https://m.ops.co.kr/board/gallery/read.html?no=27274&board_no=8" },
   { id: 2,  title: "구운과자 랜덤 증정",               date: "2025-07-28", status: "진행중",   img: "https://m.ops.co.kr/file_data/ops007/gallery/2025/07/28/6d648dea938ed712e9761a15a15874c2.jpg", url: "https://m.ops.co.kr/board/gallery/read.html?no=16940&board_no=8" },
   { id: 3,  title: "3월 새학기 이벤트",               date: "2025-02-27", status: "진행중",   img: "https://m.ops.co.kr/file_data/ops007/gallery/2025/02/27/a0e9cfe37e5979ecf1104cf078cd7391.jpg", url: "https://m.ops.co.kr/board/gallery/read.html?no=13643&board_no=8" },

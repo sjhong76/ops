@@ -1,4 +1,4 @@
-const categoryMap = {
+export const categoryMap = {
   전체:   { title: "Shop",      description: "OPS의 다양한 상품을 만나보세요." },
   빵:     { title: "Bread",     description: "매일 정성스럽게 구워낸 OPS 베이커리입니다." },
   쿠키:   { title: "Cookie",    description: "선물하기 좋은 구움과자와 쿠키 상품입니다." },
@@ -8,12 +8,12 @@ const categoryMap = {
 };
 
 // 데이터에 카테고리가 없는 경우 fallback 상품 id 목록
-const fallbackIds = {
+export const fallbackIds = {
   쿠키:   [2, 9, 10, 13],
   선물세트: [7, 13, 16, 6],
 };
 
-const CATEGORY_TABS = [
+export const CATEGORY_TABS = [
   { label: "빵",     path: "/shop/bread" },
   { label: "쿠키",   path: "/shop/cookie" },
   { label: "초콜렛", path: "/shop/chocolate" },
