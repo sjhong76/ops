@@ -1,4 +1,4 @@
-const SHOP_MENUS = [
+export const SHOP_MENUS = [
   { label: "빵",      path: "/shop/bread" },
   { label: "쿠키",    path: "/shop/cookie" },
   { label: "초콜렛",  path: "/shop/chocolate" },
@@ -6,7 +6,7 @@ const SHOP_MENUS = [
   { label: "케이크",  path: "/shop/cake" },
 ];
 
-const COMMUNITY_MENUS = [
+export const COMMUNITY_MENUS = [
   { label: "NOTICE",       path: "/community/notice",   internal: true },
   { label: "OPS MAGAZINE", path: "/community/magazine", internal: true },
   { label: "Q&A",          path: "/community/q&a",      internal: true },
