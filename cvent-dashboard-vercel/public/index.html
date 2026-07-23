@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Cvent 업무 현황</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f5f7;
+    --card:#ffffff;
+    --border:#e3e6ea;
+    --text:#1a1d23;
+    --text-sub:#6b7280;
+    --navy:#1f2a44;
+    --navy-light:#33415c;
+    --accent:#3454d1;
+    --danger:#e0392f;
+    --danger-bg:#fdeceb;
+    --warn:#f2994a;
+    --warn-bg:#fef3e8;
+    --caution:#e0b400;
+    --caution-bg:#fdf6df;
+    --success:#1f9d55;
+    --success-bg:#e8f7ee;
+    --normal:#6b7280;
+    --normal-bg:#eef0f2;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    padding-bottom:40px;
+  }
+  a{color:inherit;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px;}
+
+  /* header */
+  header.top{background:var(--navy);color:#fff;padding:20px 0 22px;}
+  header.top .wrap{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;}
+  header.top h1{font-size:22px;margin:0 0 4px;letter-spacing:-0.02em;}
+  header.top p.sub{margin:0;color:#c4cbe0;font-size:13.5px;}
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+  .meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:12px;color:#c4cbe0;}
+
+  #refreshBtn, .upload-label{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    color:#fff;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+    display:flex;align-items:center;gap:6px;
+    transition:background .15s;
+    white-space:nowrap;
+  }
+  #refreshBtn:hover, .upload-label:hover{background:rgba(255,255,255,0.22);}
+  #refreshBtn svg, .upload-label svg{width:14px;height:14px;flex:none;}
+  .upload-status{font-size:12px;color:#c4cbe0;}
+  .upload-status.ok{color:#9be6b5;}
+  .upload-status.err{color:#ffb4ac;}
+
+  section{margin-top:26px;}
+  h2.section-title{font-size:15px;font-weight:700;margin:0 0 12px;color:var(--navy);display:flex;align-items:center;gap:8px;}
+  h2.section-title .bar{width:4px;height:14px;background:var(--accent);border-radius:2px;display:inline-block;}
+
+  /* metric cards */
+  .metric-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+  .metric-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 12px;text-align:center;}
+  .metric-card .num{font-size:26px;font-weight:800;letter-spacing:-0.03em;color:var(--navy);}
+  .metric-card .label{font-size:12px;color:var(--text-sub);margin-top:4px;font-weight:600;}
+  .metric-card.danger .num{color:var(--danger);}
+  .metric-card.warn .num{color:var(--warn);}
+  .metric-card.success .num{color:var(--success);}
+
+  /* urgent section */
+  .urgent-box{background:var(--card);border:1px solid var(--danger);border-radius:var(--radius);padding:14px 16px 6px;}
+  .urgent-box.plain{border-color:var(--border);}
+  .urgent-empty{padding:20px;text-align:center;color:var(--text-sub);font-size:13.5px;}
+  .task-card{display:grid;grid-template-columns:64px 1fr 74px;align-items:center;gap:10px;padding:12px 6px;border-bottom:1px solid var(--border);}
+  .task-card:last-child{border-bottom:none;}
+  .badge{font-size:11.5px;font-weight:700;padding:4px 0;border-radius:20px;text-align:center;white-space:nowrap;}
+  .badge.overdue{background:var(--danger-bg);color:var(--danger);}
+  .badge.today{background:var(--danger-bg);color:var(--danger);}
+  .badge.orange{background:var(--warn-bg);color:var(--warn);}
+  .badge.yellow{background:var(--caution-bg);color:var(--caution);}
+  .badge.normal{background:var(--normal-bg);color:var(--normal);}
+  .badge.done{background:var(--success-bg);color:var(--success);}
+
+  .task-main .title-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+  .task-main .ename{font-weight:700;font-size:14px;color:var(--text);}
+  .tag{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;background:#eef0f7;color:var(--navy-light);}
+  .tag.post{background:#f2e9fb;color:#7c3aed;}
+  .task-main .sub-row{font-size:12px;color:var(--text-sub);margin-top:3px;display:flex;flex-wrap:wrap;gap:8px;}
+  .status-pill{font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;text-align:center;white-space:nowrap;justify-self:end;}
+
+  /* pre/post summary */
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .summary-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+  .summary-card h3{margin:0 0 12px;font-size:14.5px;display:flex;align-items:center;justify-content:space-between;}
+  .summary-card h3 .rate{font-size:20px;font-weight:800;color:var(--accent);}
+  .summary-stat-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--border);}
+  .summary-stat-row:last-child{border-bottom:none;}
+  .summary-stat-row .v{font-weight:700;}
+  .bar-track{height:8px;background:var(--normal-bg);border-radius:6px;overflow:hidden;margin-top:10px;}
+  .bar-fill{height:100%;background:var(--accent);}
+
+  /* charts */
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+  .chart-card h4{margin:0 0 10px;font-size:13.5px;color:var(--navy);}
+  .chart-holder{position:relative;height:220px;}
+
+  /* filters */
+  .filter-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;}
+  .filter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .filter-grid input[type=text], .filter-grid select{
+    width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:#fafbfc;color:var(--text);
+  }
+  .filter-flags{display:flex;gap:16px;margin-top:12px;font-size:13px;flex-wrap:wrap;}
+  .filter-flags label{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-sub);}
+  .result-count{font-size:12.5px;color:var(--text-sub);margin:0 0 10px;}
+  .empty-state{padding:30px;text-align:center;color:var(--text-sub);font-size:13.5px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);}
+
+  footer.note{margin-top:30px;text-align:center;font-size:11.5px;color:#98a0ad;}
+
+  @media (max-width:960px){
+    .metric-grid{grid-template-columns:repeat(3,1fr);}
+    .summary-grid{grid-template-columns:1fr;}
+    .chart-grid{grid-template-columns:1fr;}
+    .filter-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:640px){
+    .wrap{padding:0 14px;}
+    header.top .wrap{flex-direction:column;align-items:flex-start;}
+    .toolbar{width:100%;justify-content:space-between;}
+    .metric-grid{grid-template-columns:repeat(3,1fr);gap:8px;}
+    .metric-card{padding:12px 8px;}
+    .metric-card .num{font-size:20px;}
+    .metric-card .label{font-size:10px;}
+    .filter-grid{grid-template-columns:1fr;}
+    .task-card{grid-template-columns:52px 1fr;grid-template-rows:auto auto;}
+    .status-pill{justify-self:start;margin-top:4px;grid-column:2;}
+    .chart-holder{height:200px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div>
+      <h1>Cvent 업무 현황</h1>
+      <p class="sub">암젠코리아 · 행사별 사전·사후 Cvent 진행 현황</p>
+    </div>
+    <div class="toolbar">
+      <button id="refreshBtn" onclick="loadData()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 4v6h-6"/></svg>
+        새로고침
+      </button>
+      <div class="meta-row">
+        <span id="updatedAt">최종 업데이트: -</span>
+        <span id="uploadStatus" class="upload-status">데이터 불러오는 중...</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2 class="section-title"><span class="bar"></span>핵심 지표</h2>
+    <div class="metric-grid" id="metricGrid"></div>
+  </section>
+
+  <section>
+    <h2 class="section-title"><span class="bar"></span>일정 임박 · 기한 초과 업무</h2>
+    <div class="urgent-box" id="urgentBox"></div>
+  </section>
+
+  <section>
+    <h2 class="section-title"><span class="bar"></span>사전 · 사후 Cvent 현황</h2>
+    <div class="summary-grid" id="summaryGrid"></div>
+  </section>
+
+  <section>
+    <h2 class="section-title"><span class="bar"></span>차트로 보기</h2>
+    <div class="chart-grid">
+      <div class="chart-card"><h4>상태별 업무 건수</h4><div class="chart-holder"><canvas id="chartStatus"></canvas></div></div>
+      <div class="chart-card"><h4>사전 · 사후 완료율 비교</h4><div class="chart-holder"><canvas id="chartPrePost"></canvas></div></div>
+      <div class="chart-card"><h4>담당자별 업무 건수</h4><div class="chart-holder"><canvas id="chartOwner"></canvas></div></div>
+      <div class="chart-card"><h4>월별 행사 · Cvent 업무 건수</h4><div class="chart-holder"><canvas id="chartMonth"></canvas></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="section-title"><span class="bar"></span>전체 업무 목록</h2>
+    <div class="filter-box">
+      <div class="filter-grid">
+        <input type="text" id="fSearch" placeholder="행사명 검색">
+        <select id="fOwner"><option value="">담당자 전체</option></select>
+        <select id="fType">
+          <option value="">Cvent 구분 전체</option>
+          <option value="사전">사전</option>
+          <option value="사후">사후</option>
+        </select>
+        <select id="fStatus">
+          <option value="">상태 전체</option>
+          <option value="완료">완료</option>
+          <option value="미완료">미완료</option>
+        </select>
+      </div>
+      <div class="filter-flags">
+        <label><input type="checkbox" id="fOverdueOnly"> 기한 초과만 보기</label>
+        <label><input type="checkbox" id="fImminentOnly"> 일정 임박만 보기</label>
+      </div>
+    </div>
+    <p class="result-count" id="resultCount"></p>
+    <div id="taskList"></div>
+  </section>
+
+  <footer class="note">
+    이 화면은 <code>/api/cvent.json</code>을 자동으로 불러와 표시합니다. Excel(OneDrive) 원본을 Power Automate가 주기적으로 JSON으로 변환하므로, Excel을 수정하면 잠시 후 이 화면도 자동으로 갱신됩니다.
+  </footer>
+</div>
+
+<script>
+/* =========================================================
+   1. 전역 상태
+========================================================= */
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+let tasks = [];        // {no, eventName, eventDate, owner, cventType, deadline, status, extra, note}
+
+function fmtDate(d){
+  if(!(d instanceof Date) || isNaN(d)) return '-';
+  const mm=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+  return `${d.getFullYear()}.${mm}.${dd}`;
+}
+function parseDateStr(s){
+  // "YYYY-MM-DD" 형식의 문자열을 로컬 Date로 변환
+  if(!s || typeof s !== 'string') return new Date(NaN);
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, (m||1)-1, d||1);
+}
+
+/* =========================================================
+   2. /api/cvent.json 응답(events)을 화면에서 쓰는 tasks 배열로 변환
+      { updatedAt, events:[{no,eventName,eventDate,owner,pre:{deadline,status},post:{deadline,status,invoice},note}] }
+========================================================= */
+function eventsToTasks(events){
+  const list = [];
+  (events || []).forEach(ev=>{
+    const eventDate = parseDateStr(ev.eventDate);
+    const owner = ev.owner || '미지정';
+    list.push({
+      no: ev.no, eventName: ev.eventName, eventDate, owner,
+      cventType:'사전', deadline: parseDateStr(ev.pre && ev.pre.deadline),
+      status: (ev.pre && ev.pre.status) || '미완료', extra:'', note: ev.note || ''
+    });
+    list.push({
+      no: ev.no, eventName: ev.eventName, eventDate, owner,
+      cventType:'사후', deadline: parseDateStr(ev.post && ev.post.deadline),
+      status: (ev.post && ev.post.status) || '미완료',
+      extra: (ev.post && ev.post.invoice) || '', note: ev.note || ''
+    });
+  });
+  return list;
+}
+
+/* =========================================================
+   3. /api/cvent.json 데이터 로딩
+========================================================= */
+async function loadData(){
+  const statusEl = document.getElementById('uploadStatus');
+  statusEl.className = 'upload-status';
+  statusEl.textContent = '데이터 불러오는 중...';
+  try{
+    const res = await fetch('/api/cvent.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    tasks = eventsToTasks(data.events);
+    populateFilterOptions();
+    refreshDashboard(data.updatedAt);
+
+    statusEl.className = 'upload-status ok';
+    statusEl.textContent = `총 ${uniqueEvents(tasks).length}개 행사 로드됨`;
+  }catch(err){
+    statusEl.className = 'upload-status err';
+    statusEl.textContent = '데이터를 불러오지 못했습니다: ' + err.message;
+  }
+}
+
+/* =========================================================
+   4. 잔여일 · 긴급도 · 상태 스타일
+========================================================= */
+function ddayOf(task){ return Math.round((task.deadline - TODAY) / 86400000); }
+function urgencyOf(task){
+  if(task.status === '완료') return {rank:5, label:'완료', badgeClass:'done'};
+  const d = ddayOf(task);
+  if(d < 0)  return {rank:1, label:'D+'+Math.abs(d), badgeClass:'overdue'};
+  if(d === 0) return {rank:2, label:'D-Day', badgeClass:'today'};
+  if(d>=1 && d<=3) return {rank:3, label:'D-'+d, badgeClass:'orange'};
+  if(d>=4 && d<=7) return {rank:3, label:'D-'+d, badgeClass:'yellow'};
+  return {rank:4, label:'D-'+d, badgeClass:'normal'};
+}
+function statusStyle(status){
+  if(status === '완료') return 'background:var(--success-bg);color:var(--success);';
+  if(status === '미완료') return 'background:#e7edfd;color:var(--accent);';
+  return 'background:var(--normal-bg);color:var(--normal);';
+}
+
+/* =========================================================
+   5. 지표 계산 & 렌더링
+========================================================= */
+function uniqueEvents(list){
+  const map = new Map();
+  list.forEach(t=>{ if(!map.has(t.no)) map.set(t.no, {no:t.no, eventName:t.eventName, eventDate:t.eventDate}); });
+  return [...map.values()];
+}
+function computeMetrics(list){
+  const total = list.length;
+  const done = list.filter(t=>t.status==='완료').length;
+  const notDone = total - done;
+  const overdue = list.filter(t=>t.status!=='완료' && ddayOf(t)<0).length;
+  const imminent = list.filter(t=>t.status!=='완료' && ddayOf(t)>=0 && ddayOf(t)<=7).length;
+  const rate = total ? Math.round(done/total*1000)/10 : 0;
+  return {total, done, notDone, overdue, imminent, rate};
+}
+
+function renderMetricCards(){
+  const m = computeMetrics(tasks);
+  const eventCount = uniqueEvents(tasks).length;
+  const cards = [
+    {label:'전체 행사', value:eventCount, cls:''},
+    {label:'전체 업무', value:m.total, cls:''},
+    {label:'완료', value:m.done, cls:'success'},
+    {label:'미완료', value:m.notDone, cls:''},
+    {label:'일정 임박', value:m.imminent, cls:'warn'},
+    {label:'기한 초과', value:m.overdue, cls:'danger'},
+  ];
+  document.getElementById('metricGrid').innerHTML = cards.map(c=>`
+    <div class="metric-card ${c.cls}">
+      <div class="num">${c.value}</div>
+      <div class="label">${c.label}</div>
+    </div>`).join('') + `
+    <div class="metric-card success">
+      <div class="num">${m.rate}%</div>
+      <div class="label">완료율</div>
+    </div>`;
+}
+
+function renderUrgentSection(){
+  const urgent = tasks
+    .filter(t=>t.status!=='완료' && ddayOf(t)<=7)
+    .sort((a,b)=>ddayOf(a)-ddayOf(b));
+  const box = document.getElementById('urgentBox');
+  if(urgent.length===0){
+    box.innerHTML = '<div class="urgent-empty">현재 기한 초과 또는 일정 임박 업무가 없습니다.</div>';
+    return;
+  }
+  box.innerHTML = urgent.map(t=>taskCardHTML(t)).join('');
+}
+
+function taskCardHTML(t){
+  const u = urgencyOf(t);
+  const extraInfo = t.cventType === '사후' && t.extra ? `<span>세금계산서 ${t.extra}</span>` : '';
+  return `
+    <div class="task-card">
+      <div class="badge ${u.badgeClass}">${u.label}</div>
+      <div class="task-main">
+        <div class="title-row">
+          <span class="ename">${t.eventName}</span>
+          <span class="tag ${t.cventType==='사후'?'post':''}">${t.cventType}</span>
+        </div>
+        <div class="sub-row">
+          <span>담당 ${t.owner}</span>
+          <span>행사일 ${fmtDate(t.eventDate)}</span>
+          <span>마감 ${fmtDate(t.deadline)}</span>
+          ${extraInfo}
+        </div>
+      </div>
+      <div class="status-pill" style="${statusStyle(t.status)}">${t.status}</div>
+    </div>`;
+}
+
+function renderSummary(){
+  const grid = document.getElementById('summaryGrid');
+  grid.innerHTML = '';
+  ['사전','사후'].forEach(type=>{
+    const list = tasks.filter(t=>t.cventType===type);
+    const m = computeMetrics(list);
+    const html = `
+      <div class="summary-card">
+        <h3>${type} Cvent <span class="rate">${m.rate}%</span></h3>
+        <div class="summary-stat-row"><span>전체 건수</span><span class="v">${m.total}</span></div>
+        <div class="summary-stat-row"><span>완료</span><span class="v" style="color:var(--success)">${m.done}</span></div>
+        <div class="summary-stat-row"><span>미완료</span><span class="v">${m.notDone}</span></div>
+        <div class="summary-stat-row"><span>기한 초과</span><span class="v" style="color:var(--danger)">${m.overdue}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${m.rate}%"></div></div>
+      </div>`;
+    grid.insertAdjacentHTML('beforeend', html);
+  });
+}
+
+/* =========================================================
+   6. 필터 & 전체 목록
+========================================================= */
+function populateFilterOptions(){
+  const ownerSel = document.getElementById('fOwner');
+  const current = ownerSel.value;
+  ownerSel.innerHTML = '<option value="">담당자 전체</option>';
+  const ownerSet = [...new Set(tasks.map(t=>t.owner))].sort();
+  ownerSet.forEach(o=>{
+    ownerSel.insertAdjacentHTML('beforeend', `<option value="${o}">${o}</option>`);
+  });
+  if(ownerSet.includes(current)) ownerSel.value = current;
+}
+
+function currentFilteredSorted(){
+  const search = document.getElementById('fSearch').value.trim().toLowerCase();
+  const owner = document.getElementById('fOwner').value;
+  const type = document.getElementById('fType').value;
+  const status = document.getElementById('fStatus').value;
+  const overdueOnly = document.getElementById('fOverdueOnly').checked;
+  const imminentOnly = document.getElementById('fImminentOnly').checked;
+
+  let list = tasks.filter(t=>{
+    if(search && !t.eventName.toLowerCase().includes(search)) return false;
+    if(owner && t.owner!==owner) return false;
+    if(type && t.cventType!==type) return false;
+    if(status && t.status!==status) return false;
+    if(overdueOnly && !(t.status!=='완료' && ddayOf(t)<0)) return false;
+    if(imminentOnly && !(t.status!=='완료' && ddayOf(t)>=0 && ddayOf(t)<=7)) return false;
+    return true;
+  });
+
+  list.sort((a,b)=>{
+    const ua = urgencyOf(a), ub = urgencyOf(b);
+    if(ua.rank !== ub.rank) return ua.rank - ub.rank;
+    return ddayOf(a) - ddayOf(b);
+  });
+  return list;
+}
+
+function renderTaskList(){
+  const list = currentFilteredSorted();
+  document.getElementById('resultCount').textContent = `총 ${list.length}건`;
+  const holder = document.getElementById('taskList');
+  if(list.length===0){
+    holder.innerHTML = '<div class="empty-state">조건에 맞는 업무가 없습니다. 필터를 조정해 보세요.</div>';
+    return;
+  }
+  holder.innerHTML = `<div class="urgent-box plain">${list.map(t=>taskCardHTML(t)).join('')}</div>`;
+}
+
+['fSearch','fOwner','fType','fStatus','fOverdueOnly','fImminentOnly'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', renderTaskList);
+  document.getElementById(id).addEventListener('change', renderTaskList);
+});
+
+/* =========================================================
+   7. 차트
+========================================================= */
+let chartInstances = {};
+function renderCharts(){
+  Object.values(chartInstances).forEach(c=>c.destroy());
+
+  const doneCount = tasks.filter(t=>t.status==='완료').length;
+  const notDoneCount = tasks.length - doneCount;
+  chartInstances.status = new Chart(document.getElementById('chartStatus'), {
+    type:'doughnut',
+    data:{labels:['완료','미완료'], datasets:[{data:[doneCount, notDoneCount], backgroundColor:['#1f9d55','#3454d1'], borderWidth:0}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:11}}}}}
+  });
+
+  const preM = computeMetrics(tasks.filter(t=>t.cventType==='사전'));
+  const postM = computeMetrics(tasks.filter(t=>t.cventType==='사후'));
+  chartInstances.prepost = new Chart(document.getElementById('chartPrePost'), {
+    type:'bar',
+    data:{labels:['사전 Cvent','사후 Cvent'], datasets:[{label:'완료율(%)', data:[preM.rate, postM.rate], backgroundColor:['#3454d1','#7c3aed'], borderRadius:6, maxBarThickness:60}]},
+    options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true, max:100}}, plugins:{legend:{display:false}}}
+  });
+
+  const ownerNames = [...new Set(tasks.map(t=>t.owner))];
+  const ownerCounts = ownerNames.map(o=>tasks.filter(t=>t.owner===o).length);
+  chartInstances.owner = new Chart(document.getElementById('chartOwner'), {
+    type:'bar',
+    data:{labels:ownerNames, datasets:[{label:'업무 건수', data:ownerCounts, backgroundColor:'#1f2a44', borderRadius:6, maxBarThickness:34}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true, ticks:{stepSize:1}}}}
+  });
+
+  const monthKey = d => `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}`;
+  const events = uniqueEvents(tasks);
+  const months = [...new Set(events.map(ev=>monthKey(ev.eventDate)))].sort();
+  const eventCountByMonth = months.map(m=>events.filter(ev=>monthKey(ev.eventDate)===m).length);
+  const taskCountByMonth = months.map(m=>tasks.filter(t=>monthKey(t.eventDate)===m).length);
+  chartInstances.month = new Chart(document.getElementById('chartMonth'), {
+    type:'bar',
+    data:{labels:months, datasets:[
+      {label:'행사 수', data:eventCountByMonth, backgroundColor:'#a8b3d1', borderRadius:5, maxBarThickness:22},
+      {label:'Cvent 업무 건수', data:taskCountByMonth, backgroundColor:'#3454d1', borderRadius:5, maxBarThickness:22},
+    ]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:11}}}}, scales:{y:{beginAtZero:true, ticks:{stepSize:1}}}}
+  });
+}
+
+/* =========================================================
+   8. 초기 실행 & 새로고침
+========================================================= */
+function updateTimestamp(updatedAtISO){
+  let d = updatedAtISO ? new Date(updatedAtISO) : null;
+  if(!d || isNaN(d)) d = new Date();
+  const s = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('updatedAt').textContent = '최종 업데이트: ' + s;
+}
+
+function refreshDashboard(updatedAtISO){
+  renderMetricCards();
+  renderUrgentSection();
+  renderSummary();
+  renderTaskList();
+  renderCharts();
+  updateTimestamp(updatedAtISO);
+}
+
+loadData();
+</script>
+</body>
+</html>
