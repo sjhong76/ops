@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "functions": {
+    "api/cvent.json.js": {
+      "memory": 512,
+      "maxDuration": 15
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/cvent.json",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=60, stale-while-revalidate=30" }
+      ]
+    }
+  ]
+}
